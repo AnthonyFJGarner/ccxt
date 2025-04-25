@@ -4,7 +4,7 @@
 
 # ----------------------------------------------------------------------------
 
-__version__ = '4.4.50'
+__version__ = '4.4.77'
 
 # ----------------------------------------------------------------------------
 
@@ -13,6 +13,7 @@ from ccxt.async_support.base.exchange import Exchange  # noqa: F401
 # CCXT Pro exchanges (now this is mainly used for importing exchanges in WS tests)
 
 from ccxt.pro.alpaca import alpaca                                        # noqa: F401
+from ccxt.pro.apex import apex                                            # noqa: F401
 from ccxt.pro.ascendex import ascendex                                    # noqa: F401
 from ccxt.pro.bequant import bequant                                      # noqa: F401
 from ccxt.pro.binance import binance                                      # noqa: F401
@@ -20,15 +21,12 @@ from ccxt.pro.binancecoinm import binancecoinm                            # noqa
 from ccxt.pro.binanceus import binanceus                                  # noqa: F401
 from ccxt.pro.binanceusdm import binanceusdm                              # noqa: F401
 from ccxt.pro.bingx import bingx                                          # noqa: F401
-from ccxt.pro.bitcoincom import bitcoincom                                # noqa: F401
 from ccxt.pro.bitfinex import bitfinex                                    # noqa: F401
-from ccxt.pro.bitfinex1 import bitfinex1                                  # noqa: F401
 from ccxt.pro.bitget import bitget                                        # noqa: F401
 from ccxt.pro.bithumb import bithumb                                      # noqa: F401
 from ccxt.pro.bitmart import bitmart                                      # noqa: F401
 from ccxt.pro.bitmex import bitmex                                        # noqa: F401
 from ccxt.pro.bitopro import bitopro                                      # noqa: F401
-from ccxt.pro.bitpanda import bitpanda                                    # noqa: F401
 from ccxt.pro.bitrue import bitrue                                        # noqa: F401
 from ccxt.pro.bitstamp import bitstamp                                    # noqa: F401
 from ccxt.pro.bitvavo import bitvavo                                      # noqa: F401
@@ -45,9 +43,9 @@ from ccxt.pro.coincheck import coincheck                                  # noqa
 from ccxt.pro.coinex import coinex                                        # noqa: F401
 from ccxt.pro.coinone import coinone                                      # noqa: F401
 from ccxt.pro.cryptocom import cryptocom                                  # noqa: F401
-from ccxt.pro.currencycom import currencycom                              # noqa: F401
 from ccxt.pro.defx import defx                                            # noqa: F401
 from ccxt.pro.deribit import deribit                                      # noqa: F401
+from ccxt.pro.derive import derive                                        # noqa: F401
 from ccxt.pro.exmo import exmo                                            # noqa: F401
 from ccxt.pro.gate import gate                                            # noqa: F401
 from ccxt.pro.gateio import gateio                                        # noqa: F401
@@ -78,11 +76,10 @@ from ccxt.pro.p2b import p2b                                              # noqa
 from ccxt.pro.paradex import paradex                                      # noqa: F401
 from ccxt.pro.phemex import phemex                                        # noqa: F401
 from ccxt.pro.poloniex import poloniex                                    # noqa: F401
-from ccxt.pro.poloniexfutures import poloniexfutures                      # noqa: F401
 from ccxt.pro.probit import probit                                        # noqa: F401
+from ccxt.pro.tradeogre import tradeogre                                  # noqa: F401
 from ccxt.pro.upbit import upbit                                          # noqa: F401
 from ccxt.pro.vertex import vertex                                        # noqa: F401
-from ccxt.pro.wazirx import wazirx                                        # noqa: F401
 from ccxt.pro.whitebit import whitebit                                    # noqa: F401
 from ccxt.pro.woo import woo                                              # noqa: F401
 from ccxt.pro.woofipro import woofipro                                    # noqa: F401
@@ -90,6 +87,7 @@ from ccxt.pro.xt import xt                                                # noqa
 
 exchanges = [
     'alpaca',
+    'apex',
     'ascendex',
     'bequant',
     'binance',
@@ -97,15 +95,12 @@ exchanges = [
     'binanceus',
     'binanceusdm',
     'bingx',
-    'bitcoincom',
     'bitfinex',
-    'bitfinex1',
     'bitget',
     'bithumb',
     'bitmart',
     'bitmex',
     'bitopro',
-    'bitpanda',
     'bitrue',
     'bitstamp',
     'bitvavo',
@@ -122,9 +117,9 @@ exchanges = [
     'coinex',
     'coinone',
     'cryptocom',
-    'currencycom',
     'defx',
     'deribit',
+    'derive',
     'exmo',
     'gate',
     'gateio',
@@ -155,11 +150,10 @@ exchanges = [
     'paradex',
     'phemex',
     'poloniex',
-    'poloniexfutures',
     'probit',
+    'tradeogre',
     'upbit',
     'vertex',
-    'wazirx',
     'whitebit',
     'woo',
     'woofipro',

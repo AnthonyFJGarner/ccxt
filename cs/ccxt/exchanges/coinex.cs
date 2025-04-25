@@ -515,17 +515,20 @@ public partial class coinex : Exchange
                         { "limit", 1000 },
                         { "daysBack", null },
                         { "untilDays", 100000 },
+                        { "symbolRequired", true },
                     } },
                     { "fetchOrder", new Dictionary<string, object>() {
                         { "marginMode", false },
                         { "trigger", false },
                         { "trailing", false },
+                        { "symbolRequired", true },
                     } },
                     { "fetchOpenOrders", new Dictionary<string, object>() {
                         { "marginMode", true },
                         { "limit", 1000 },
                         { "trigger", true },
                         { "trailing", false },
+                        { "symbolRequired", false },
                     } },
                     { "fetchOrders", null },
                     { "fetchClosedOrders", new Dictionary<string, object>() {
@@ -536,6 +539,7 @@ public partial class coinex : Exchange
                         { "untilDays", null },
                         { "trigger", true },
                         { "trailing", false },
+                        { "symbolRequired", false },
                     } },
                     { "fetchOHLCV", new Dictionary<string, object>() {
                         { "limit", 1000 },
@@ -733,6 +737,10 @@ public partial class coinex : Exchange
             {
                 object chain = getValue(chains, j);
                 object networkId = this.safeString(chain, "chain");
+                if (isTrue(isEqual(networkId, null)))
+                {
+                    continue;
+                }
                 object precisionString = this.parsePrecision(this.safeString(chain, "withdrawal_precision"));
                 object feeString = this.safeString(chain, "withdrawal_fee");
                 object minNetworkDepositString = this.safeString(chain, "min_deposit_amount");
@@ -3928,7 +3936,7 @@ public partial class coinex : Exchange
         object request = new Dictionary<string, object>() {
             { "ccy", getValue(currency, "id") },
             { "to_address", address },
-            { "amount", this.numberToString(amount) },
+            { "amount", this.currencyToPrecision(code, amount) },
         };
         if (isTrue(!isEqual(tag, null)))
         {

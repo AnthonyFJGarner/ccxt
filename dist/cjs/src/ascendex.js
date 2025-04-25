@@ -56,6 +56,7 @@ class ascendex extends ascendex$1 {
                 'fetchFundingRate': 'emulated',
                 'fetchFundingRateHistory': false,
                 'fetchFundingRates': true,
+                'fetchGreeks': false,
                 'fetchIndexOHLCV': false,
                 'fetchLeverage': 'emulated',
                 'fetchLeverages': true,
@@ -65,10 +66,13 @@ class ascendex extends ascendex$1 {
                 'fetchMarketLeverageTiers': 'emulated',
                 'fetchMarkets': true,
                 'fetchMarkOHLCV': false,
+                'fetchMySettlementHistory': false,
                 'fetchOHLCV': true,
                 'fetchOpenInterest': false,
                 'fetchOpenInterestHistory': false,
                 'fetchOpenOrders': true,
+                'fetchOption': false,
+                'fetchOptionChain': false,
                 'fetchOrder': true,
                 'fetchOrderBook': true,
                 'fetchOrders': false,
@@ -77,6 +81,7 @@ class ascendex extends ascendex$1 {
                 'fetchPositions': true,
                 'fetchPositionsRisk': false,
                 'fetchPremiumIndexOHLCV': false,
+                'fetchSettlementHistory': false,
                 'fetchTicker': true,
                 'fetchTickers': true,
                 'fetchTime': true,
@@ -88,6 +93,7 @@ class ascendex extends ascendex$1 {
                 'fetchTransactions': 'emulated',
                 'fetchTransfer': false,
                 'fetchTransfers': false,
+                'fetchVolatilityHistory': false,
                 'fetchWithdrawal': false,
                 'fetchWithdrawals': true,
                 'reduceMargin': true,
@@ -283,7 +289,6 @@ class ascendex extends ascendex$1 {
                     'AVAX': 'avalanche C chain',
                     'OMNI': 'Omni',
                     // 'TRC': 'TRC20',
-                    'TRX': 'TRC20',
                     'TRC20': 'TRC20',
                     'ERC20': 'ERC20',
                     'GO20': 'GO20',
@@ -329,6 +334,7 @@ class ascendex extends ascendex$1 {
                         'trigger': false,
                         'trailing': false,
                         'marketType': true,
+                        'symbolRequired': false,
                     },
                     'fetchOpenOrders': {
                         'marginMode': false,
@@ -336,6 +342,7 @@ class ascendex extends ascendex$1 {
                         'trigger': false,
                         'trailing': false,
                         'marketType': true,
+                        'symbolRequired': false,
                     },
                     'fetchOrders': undefined,
                     'fetchClosedOrders': undefined,
@@ -353,6 +360,7 @@ class ascendex extends ascendex$1 {
                         'untilDays': 100000,
                         'trigger': false,
                         'trailing': false,
+                        'symbolRequired': false,
                     },
                 },
                 'forDerivatives': {
@@ -376,6 +384,7 @@ class ascendex extends ascendex$1 {
                         'untilDays': undefined,
                         'trigger': false,
                         'trailing': false,
+                        'symbolRequired': false,
                     },
                 },
                 'swap': {
@@ -544,7 +553,7 @@ class ascendex extends ascendex$1 {
         const ids = Object.keys(dataById);
         const result = {};
         for (let i = 0; i < ids.length; i++) {
-            const id = ids[i];
+            const id = this.safeString(ids, i);
             const currency = dataById[id];
             const code = this.safeCurrencyCode(id);
             const scale = this.safeString2(currency, 'precisionScale', 'nativeScale');
@@ -2038,7 +2047,7 @@ class ascendex extends ascendex$1 {
         //         "code": 0,
         //         "data": [
         //             {
-        //                 "avgPx": "0",         // Average filled price of the order
+        //                 "avgPx": "0",        // Average filled price of the order
         //                 "cumFee": "0",       // cumulative fee paid for this order
         //                 "cumFilledQty": "0", // cumulative filled quantity
         //                 "errorCode": "",     // error code; could be empty

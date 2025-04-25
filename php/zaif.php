@@ -10,7 +10,7 @@ use ccxt\abstract\zaif as Exchange;
 
 class zaif extends Exchange {
 
-    public function describe() {
+    public function describe(): mixed {
         return $this->deep_extend(parent::describe(), array(
             'id' => 'zaif',
             'name' => 'Zaif',
@@ -160,6 +160,7 @@ class zaif extends Exchange {
                         'limit' => null,
                         'trigger' => false,
                         'trailing' => false,
+                        'symbolRequired' => false,
                     ),
                     'fetchOrders' => null, // todo
                     'fetchClosedOrders' => array(
@@ -170,6 +171,7 @@ class zaif extends Exchange {
                         'untilDays' => 100000, // todo
                         'trigger' => false,
                         'trailing' => false,
+                        'symbolRequired' => false,
                     ),
                     'fetchOHLCV' => null,
                 ),

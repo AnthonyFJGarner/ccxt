@@ -15,7 +15,7 @@ import type { Balances, Bool, Currency, Currencies, DepositAddress, Dict, Fundin
  * @augments Exchange
  */
 export default class coincatch extends Exchange {
-    describe () {
+    describe (): any {
         return this.deepExtend (super.describe (), {
             'id': 'coincatch',
             'name': 'CoinCatch',
@@ -449,11 +449,13 @@ export default class coincatch extends Exchange {
                         'limit': 500,
                         'daysBack': 100000, // todo implement
                         'untilDays': 100000, // todo implement
+                        'symbolRequired': true,
                     },
                     'fetchOrder': {
                         'marginMode': false,
                         'trigger': false,
                         'trailing': false,
+                        'symbolRequired': false,
                     },
                     'fetchOpenOrders': {
                         'marginMode': false,
@@ -461,6 +463,7 @@ export default class coincatch extends Exchange {
                         'trigger': true,
                         'trailing': false,
                         'marketType': true,
+                        'symbolRequired': false,
                     },
                     'fetchOrders': undefined,
                     'fetchClosedOrders': undefined, // todo implement
@@ -579,7 +582,7 @@ export default class coincatch extends Exchange {
      * @param {object} [params] extra parameters specific to the exchange API endpoint
      * @returns {int} the current integer timestamp in milliseconds from the exchange server
      */
-    async fetchTime (params = {}) {
+    async fetchTime (params = {}): Promise<Int> {
         const response = await this.publicGetApiSpotV1PublicTime (params);
         //
         //     {

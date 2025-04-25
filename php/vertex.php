@@ -10,7 +10,7 @@ use ccxt\abstract\vertex as Exchange;
 
 class vertex extends Exchange {
 
-    public function describe() {
+    public function describe(): mixed {
         return $this->deep_extend(parent::describe(), array(
             'id' => 'vertex',
             'name' => 'Vertex',
@@ -349,17 +349,20 @@ class vertex extends Exchange {
                         'limit' => 500,
                         'daysBack' => 100000, // todo
                         'untilDays' => null,
+                        'symbolRequired' => false,
                     ),
                     'fetchOrder' => array(
                         'marginMode' => false,
                         'trigger' => false,
                         'trailing' => false,
+                        'symbolRequired' => true,
                     ),
                     'fetchOpenOrders' => array(
                         'marginMode' => false,
                         'limit' => 500,
                         'trigger' => true,
                         'trailing' => false,
+                        'symbolRequired' => false,
                     ),
                     'fetchOrders' => null, // todo, only for trigger
                     'fetchClosedOrders' => null, // todo through fetchOrders
@@ -620,7 +623,7 @@ class vertex extends Exchange {
         return $result;
     }
 
-    public function fetch_time($params = array ()) {
+    public function fetch_time($params = array ()): ?int {
         /**
          * fetches the current integer timestamp in milliseconds from the exchange server
          * @param {array} [$params] extra parameters specific to the exchange API endpoint
@@ -628,7 +631,7 @@ class vertex extends Exchange {
          */
         $response = $this->v1GatewayGetTime ($params);
         // 1717481623452
-        return $this->parse_number($response);
+        return $this->parse_to_int($response);
     }
 
     public function fetch_status($params = array ()) {
@@ -1561,7 +1564,7 @@ class vertex extends Exchange {
         if (mb_strpos($base, 'PERP') > 0) {
             $marketId = str_replace('-PERP', '', $marketId) . ':USDC';
         }
-        $market = $this->market($marketId);
+        $market = $this->safe_market($marketId, $market);
         $last = $this->safe_string($ticker, 'last_price');
         return $this->safe_ticker(array(
             'symbol' => $market['symbol'],
@@ -2498,15 +2501,16 @@ class vertex extends Exchange {
             'digests' => $ids,
             'nonce' => $nonce,
         );
+        $productIds = $cancels['productIds'];
         $marketIdNum = $this->parse_to_numeric($marketId);
         for ($i = 0; $i < count($ids); $i++) {
-            $cancels['productIds'][] = $marketIdNum;
+            $productIds[] = $marketIdNum;
         }
         $request = array(
             'cancel_orders' => array(
                 'tx' => array(
                     'sender' => $cancels['sender'],
-                    'productIds' => $cancels['productIds'],
+                    'productIds' => $productIds,
                     'digests' => $cancels['digests'],
                     'nonce' => $this->number_to_string($cancels['nonce']),
                 ),

@@ -46,6 +46,7 @@ public partial class ascendex : Exchange
                 { "fetchFundingRate", "emulated" },
                 { "fetchFundingRateHistory", false },
                 { "fetchFundingRates", true },
+                { "fetchGreeks", false },
                 { "fetchIndexOHLCV", false },
                 { "fetchLeverage", "emulated" },
                 { "fetchLeverages", true },
@@ -55,10 +56,13 @@ public partial class ascendex : Exchange
                 { "fetchMarketLeverageTiers", "emulated" },
                 { "fetchMarkets", true },
                 { "fetchMarkOHLCV", false },
+                { "fetchMySettlementHistory", false },
                 { "fetchOHLCV", true },
                 { "fetchOpenInterest", false },
                 { "fetchOpenInterestHistory", false },
                 { "fetchOpenOrders", true },
+                { "fetchOption", false },
+                { "fetchOptionChain", false },
                 { "fetchOrder", true },
                 { "fetchOrderBook", true },
                 { "fetchOrders", false },
@@ -67,6 +71,7 @@ public partial class ascendex : Exchange
                 { "fetchPositions", true },
                 { "fetchPositionsRisk", false },
                 { "fetchPremiumIndexOHLCV", false },
+                { "fetchSettlementHistory", false },
                 { "fetchTicker", true },
                 { "fetchTickers", true },
                 { "fetchTime", true },
@@ -78,6 +83,7 @@ public partial class ascendex : Exchange
                 { "fetchTransactions", "emulated" },
                 { "fetchTransfer", false },
                 { "fetchTransfers", false },
+                { "fetchVolatilityHistory", false },
                 { "fetchWithdrawal", false },
                 { "fetchWithdrawals", true },
                 { "reduceMargin", true },
@@ -270,7 +276,6 @@ public partial class ascendex : Exchange
                     { "SOL", "Solana" },
                     { "AVAX", "avalanche C chain" },
                     { "OMNI", "Omni" },
-                    { "TRX", "TRC20" },
                     { "TRC20", "TRC20" },
                     { "ERC20", "ERC20" },
                     { "GO20", "GO20" },
@@ -316,6 +321,7 @@ public partial class ascendex : Exchange
                         { "trigger", false },
                         { "trailing", false },
                         { "marketType", true },
+                        { "symbolRequired", false },
                     } },
                     { "fetchOpenOrders", new Dictionary<string, object>() {
                         { "marginMode", false },
@@ -323,6 +329,7 @@ public partial class ascendex : Exchange
                         { "trigger", false },
                         { "trailing", false },
                         { "marketType", true },
+                        { "symbolRequired", false },
                     } },
                     { "fetchOrders", null },
                     { "fetchClosedOrders", null },
@@ -340,6 +347,7 @@ public partial class ascendex : Exchange
                         { "untilDays", 100000 },
                         { "trigger", false },
                         { "trailing", false },
+                        { "symbolRequired", false },
                     } },
                 } },
                 { "forDerivatives", new Dictionary<string, object>() {
@@ -362,6 +370,7 @@ public partial class ascendex : Exchange
                         { "untilDays", null },
                         { "trigger", false },
                         { "trailing", false },
+                        { "symbolRequired", false },
                     } },
                 } },
                 { "swap", new Dictionary<string, object>() {
@@ -538,7 +547,7 @@ public partial class ascendex : Exchange
         object result = new Dictionary<string, object>() {};
         for (object i = 0; isLessThan(i, getArrayLength(ids)); postFixIncrement(ref i))
         {
-            object id = getValue(ids, i);
+            object id = this.safeString(ids, i);
             object currency = getValue(dataById, id);
             object code = this.safeCurrencyCode(id);
             object scale = this.safeString2(currency, "precisionScale", "nativeScale");
@@ -2150,7 +2159,7 @@ public partial class ascendex : Exchange
         //         "code": 0,
         //         "data": [
         //             {
-        //                 "avgPx": "0",         // Average filled price of the order
+        //                 "avgPx": "0",        // Average filled price of the order
         //                 "cumFee": "0",       // cumulative fee paid for this order
         //                 "cumFilledQty": "0", // cumulative filled quantity
         //                 "errorCode": "",     // error code; could be empty

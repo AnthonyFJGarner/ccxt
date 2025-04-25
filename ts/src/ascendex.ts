@@ -15,7 +15,7 @@ import type { TransferEntry, FundingHistory, Int, OHLCV, Order, OrderSide, Order
  * @augments Exchange
  */
 export default class ascendex extends Exchange {
-    describe () {
+    describe (): any {
         return this.deepExtend (super.describe (), {
             'id': 'ascendex',
             'name': 'AscendEX',
@@ -58,6 +58,7 @@ export default class ascendex extends Exchange {
                 'fetchFundingRate': 'emulated',
                 'fetchFundingRateHistory': false,
                 'fetchFundingRates': true,
+                'fetchGreeks': false,
                 'fetchIndexOHLCV': false,
                 'fetchLeverage': 'emulated',
                 'fetchLeverages': true,
@@ -67,10 +68,13 @@ export default class ascendex extends Exchange {
                 'fetchMarketLeverageTiers': 'emulated',
                 'fetchMarkets': true,
                 'fetchMarkOHLCV': false,
+                'fetchMySettlementHistory': false,
                 'fetchOHLCV': true,
                 'fetchOpenInterest': false,
                 'fetchOpenInterestHistory': false,
                 'fetchOpenOrders': true,
+                'fetchOption': false,
+                'fetchOptionChain': false,
                 'fetchOrder': true,
                 'fetchOrderBook': true,
                 'fetchOrders': false,
@@ -79,6 +83,7 @@ export default class ascendex extends Exchange {
                 'fetchPositions': true,
                 'fetchPositionsRisk': false,
                 'fetchPremiumIndexOHLCV': false,
+                'fetchSettlementHistory': false,
                 'fetchTicker': true,
                 'fetchTickers': true,
                 'fetchTime': true,
@@ -90,6 +95,7 @@ export default class ascendex extends Exchange {
                 'fetchTransactions': 'emulated',
                 'fetchTransfer': false,
                 'fetchTransfers': false,
+                'fetchVolatilityHistory': false,
                 'fetchWithdrawal': false,
                 'fetchWithdrawals': true,
                 'reduceMargin': true,
@@ -285,7 +291,6 @@ export default class ascendex extends Exchange {
                     'AVAX': 'avalanche C chain',
                     'OMNI': 'Omni',
                     // 'TRC': 'TRC20',
-                    'TRX': 'TRC20',
                     'TRC20': 'TRC20',
                     'ERC20': 'ERC20',
                     'GO20': 'GO20',
@@ -331,6 +336,7 @@ export default class ascendex extends Exchange {
                         'trigger': false,
                         'trailing': false,
                         'marketType': true,
+                        'symbolRequired': false,
                     },
                     'fetchOpenOrders': {
                         'marginMode': false,
@@ -338,6 +344,7 @@ export default class ascendex extends Exchange {
                         'trigger': false,
                         'trailing': false,
                         'marketType': true,
+                        'symbolRequired': false,
                     },
                     'fetchOrders': undefined,
                     'fetchClosedOrders': undefined,
@@ -355,6 +362,7 @@ export default class ascendex extends Exchange {
                         'untilDays': 100000,
                         'trigger': false,
                         'trailing': false,
+                        'symbolRequired': false,
                     },
                 },
                 'forDerivatives': {
@@ -378,6 +386,7 @@ export default class ascendex extends Exchange {
                         'untilDays': undefined,
                         'trigger': false,
                         'trailing': false,
+                        'symbolRequired': false,
                     },
                 },
                 'swap': {
@@ -548,7 +557,7 @@ export default class ascendex extends Exchange {
         const ids = Object.keys (dataById);
         const result: Dict = {};
         for (let i = 0; i < ids.length; i++) {
-            const id = ids[i];
+            const id = this.safeString (ids, i);
             const currency = dataById[id];
             const code = this.safeCurrencyCode (id);
             const scale = this.safeString2 (currency, 'precisionScale', 'nativeScale');
@@ -790,7 +799,7 @@ export default class ascendex extends Exchange {
      * @param {object} [params] extra parameters specific to the exchange API endpoint
      * @returns {int} the current integer timestamp in milliseconds from the ascendex server
      */
-    async fetchTime (params = {}) {
+    async fetchTime (params = {}): Promise<Int> {
         const request: Dict = {
             'requestTime': this.milliseconds (),
         };
@@ -2045,7 +2054,7 @@ export default class ascendex extends Exchange {
         //         "code": 0,
         //         "data": [
         //             {
-        //                 "avgPx": "0",         // Average filled price of the order
+        //                 "avgPx": "0",        // Average filled price of the order
         //                 "cumFee": "0",       // cumulative fee paid for this order
         //                 "cumFilledQty": "0", // cumulative filled quantity
         //                 "errorCode": "",     // error code; could be empty

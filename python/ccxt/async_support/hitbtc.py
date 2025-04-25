@@ -6,7 +6,7 @@
 from ccxt.async_support.base.exchange import Exchange
 from ccxt.abstract.hitbtc import ImplicitAPI
 import hashlib
-from ccxt.base.types import Balances, Currencies, Currency, DepositAddress, Int, Leverage, MarginMode, MarginModes, MarginModification, Market, Num, Order, OrderBook, OrderSide, OrderType, Str, Strings, Ticker, Tickers, FundingRate, FundingRates, Trade, TradingFeeInterface, TradingFees, Transaction, TransferEntry
+from ccxt.base.types import Any, Balances, Currencies, Currency, DepositAddress, Int, Leverage, MarginMode, MarginModes, MarginModification, Market, Num, Order, OrderBook, OrderSide, OrderType, Str, Strings, Ticker, Tickers, FundingRate, FundingRates, OrderBooks, Trade, TradingFeeInterface, TradingFees, Transaction, TransferEntry
 from typing import List
 from ccxt.base.errors import ExchangeError
 from ccxt.base.errors import AuthenticationError
@@ -28,7 +28,7 @@ from ccxt.base.precise import Precise
 
 class hitbtc(Exchange, ImplicitAPI):
 
-    def describe(self):
+    def describe(self) -> Any:
         return self.deep_extend(super(hitbtc, self).describe(), {
             'id': 'hitbtc',
             'name': 'HitBTC',
@@ -44,7 +44,7 @@ class hitbtc(Exchange, ImplicitAPI):
                 'margin': True,
                 'swap': True,
                 'future': False,
-                'option': None,
+                'option': False,
                 'addMargin': True,
                 'cancelAllOrders': True,
                 'cancelOrder': True,
@@ -76,6 +76,7 @@ class hitbtc(Exchange, ImplicitAPI):
                 'fetchFundingRate': True,
                 'fetchFundingRateHistory': True,
                 'fetchFundingRates': True,
+                'fetchGreeks': False,
                 'fetchIndexOHLCV': True,
                 'fetchIsolatedBorrowRate': False,
                 'fetchIsolatedBorrowRates': False,
@@ -88,6 +89,7 @@ class hitbtc(Exchange, ImplicitAPI):
                 'fetchMarkets': True,
                 'fetchMarkOHLCV': True,
                 'fetchMyLiquidations': False,
+                'fetchMySettlementHistory': False,
                 'fetchMyTrades': True,
                 'fetchOHLCV': True,
                 'fetchOpenInterest': True,
@@ -95,6 +97,8 @@ class hitbtc(Exchange, ImplicitAPI):
                 'fetchOpenInterests': True,
                 'fetchOpenOrder': True,
                 'fetchOpenOrders': True,
+                'fetchOption': False,
+                'fetchOptionChain': False,
                 'fetchOrder': True,
                 'fetchOrderBook': True,
                 'fetchOrderBooks': True,
@@ -103,12 +107,14 @@ class hitbtc(Exchange, ImplicitAPI):
                 'fetchPosition': True,
                 'fetchPositions': True,
                 'fetchPremiumIndexOHLCV': True,
+                'fetchSettlementHistory': False,
                 'fetchTicker': True,
                 'fetchTickers': True,
                 'fetchTrades': True,
                 'fetchTradingFee': True,
                 'fetchTradingFees': True,
                 'fetchTransactions': 'emulated',
+                'fetchVolatilityHistory': False,
                 'fetchWithdrawals': True,
                 'reduceMargin': True,
                 'sandbox': True,
@@ -335,12 +341,14 @@ class hitbtc(Exchange, ImplicitAPI):
                         'limit': 1000,
                         'daysBack': 100000,
                         'untilDays': 100000,
+                        'symbolRequired': False,
                         'marketType': True,
                     },
                     'fetchOrder': {
                         'marginMode': True,
                         'trigger': False,
                         'trailing': False,
+                        'symbolRequired': False,
                         'marketType': True,
                     },
                     'fetchOpenOrders': {
@@ -348,6 +356,7 @@ class hitbtc(Exchange, ImplicitAPI):
                         'limit': 1000,
                         'trigger': False,
                         'trailing': False,
+                        'symbolRequired': False,
                         'marketType': True,
                     },
                     'fetchOrders': None,
@@ -359,6 +368,7 @@ class hitbtc(Exchange, ImplicitAPI):
                         'untilDays': 100000,  # todo
                         'trigger': False,
                         'trailing': False,
+                        'symbolRequired': False,
                         'marketType': True,
                     },
                     'fetchOHLCV': {
@@ -1016,7 +1026,7 @@ class hitbtc(Exchange, ImplicitAPI):
             }
         return result
 
-    async def create_deposit_address(self, code: str, params={}):
+    async def create_deposit_address(self, code: str, params={}) -> DepositAddress:
         """
         create a currency deposit address
 
@@ -1404,7 +1414,7 @@ class hitbtc(Exchange, ImplicitAPI):
         fee = None
         feeCostString = self.safe_string(trade, 'fee')
         taker = self.safe_value(trade, 'taker')
-        takerOrMaker = None
+        takerOrMaker: str
         if taker is not None:
             takerOrMaker = 'taker' if taker else 'maker'
         else:
@@ -1624,7 +1634,7 @@ class hitbtc(Exchange, ImplicitAPI):
         """
         return await self.fetch_transactions_helper('WITHDRAW', code, since, limit, params)
 
-    async def fetch_order_books(self, symbols: Strings = None, limit: Int = None, params={}):
+    async def fetch_order_books(self, symbols: Strings = None, limit: Int = None, params={}) -> OrderBooks:
         """
         fetches information on open orders with bid(buy) and ask(sell) prices, volumes and other data for multiple markets
 

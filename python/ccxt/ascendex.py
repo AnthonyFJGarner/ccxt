@@ -6,7 +6,7 @@
 from ccxt.base.exchange import Exchange
 from ccxt.abstract.ascendex import ImplicitAPI
 import hashlib
-from ccxt.base.types import Account, Balances, Currencies, Currency, DepositAddress, Int, Leverage, Leverages, LeverageTier, LeverageTiers, MarginMode, MarginModes, MarginModification, Market, Num, Order, OrderBook, OrderRequest, OrderSide, OrderType, Str, Strings, Ticker, Tickers, FundingRate, FundingRates, Trade, TradingFees, Transaction, TransferEntry
+from ccxt.base.types import Account, Any, Balances, Currencies, Currency, DepositAddress, Int, Leverage, Leverages, LeverageTier, LeverageTiers, MarginMode, MarginModes, MarginModification, Market, Num, Order, OrderBook, OrderRequest, OrderSide, OrderType, Str, Strings, Ticker, Tickers, FundingRate, FundingRates, Trade, TradingFees, Transaction, TransferEntry
 from typing import List
 from ccxt.base.errors import ExchangeError
 from ccxt.base.errors import AuthenticationError
@@ -24,7 +24,7 @@ from ccxt.base.precise import Precise
 
 class ascendex(Exchange, ImplicitAPI):
 
-    def describe(self):
+    def describe(self) -> Any:
         return self.deep_extend(super(ascendex, self).describe(), {
             'id': 'ascendex',
             'name': 'AscendEX',
@@ -67,6 +67,7 @@ class ascendex(Exchange, ImplicitAPI):
                 'fetchFundingRate': 'emulated',
                 'fetchFundingRateHistory': False,
                 'fetchFundingRates': True,
+                'fetchGreeks': False,
                 'fetchIndexOHLCV': False,
                 'fetchLeverage': 'emulated',
                 'fetchLeverages': True,
@@ -76,10 +77,13 @@ class ascendex(Exchange, ImplicitAPI):
                 'fetchMarketLeverageTiers': 'emulated',
                 'fetchMarkets': True,
                 'fetchMarkOHLCV': False,
+                'fetchMySettlementHistory': False,
                 'fetchOHLCV': True,
                 'fetchOpenInterest': False,
                 'fetchOpenInterestHistory': False,
                 'fetchOpenOrders': True,
+                'fetchOption': False,
+                'fetchOptionChain': False,
                 'fetchOrder': True,
                 'fetchOrderBook': True,
                 'fetchOrders': False,
@@ -88,6 +92,7 @@ class ascendex(Exchange, ImplicitAPI):
                 'fetchPositions': True,
                 'fetchPositionsRisk': False,
                 'fetchPremiumIndexOHLCV': False,
+                'fetchSettlementHistory': False,
                 'fetchTicker': True,
                 'fetchTickers': True,
                 'fetchTime': True,
@@ -99,6 +104,7 @@ class ascendex(Exchange, ImplicitAPI):
                 'fetchTransactions': 'emulated',
                 'fetchTransfer': False,
                 'fetchTransfers': False,
+                'fetchVolatilityHistory': False,
                 'fetchWithdrawal': False,
                 'fetchWithdrawals': True,
                 'reduceMargin': True,
@@ -294,7 +300,6 @@ class ascendex(Exchange, ImplicitAPI):
                     'AVAX': 'avalanche C chain',
                     'OMNI': 'Omni',
                     # 'TRC': 'TRC20',
-                    'TRX': 'TRC20',
                     'TRC20': 'TRC20',
                     'ERC20': 'ERC20',
                     'GO20': 'GO20',
@@ -340,6 +345,7 @@ class ascendex(Exchange, ImplicitAPI):
                         'trigger': False,
                         'trailing': False,
                         'marketType': True,
+                        'symbolRequired': False,
                     },
                     'fetchOpenOrders': {
                         'marginMode': False,
@@ -347,6 +353,7 @@ class ascendex(Exchange, ImplicitAPI):
                         'trigger': False,
                         'trailing': False,
                         'marketType': True,
+                        'symbolRequired': False,
                     },
                     'fetchOrders': None,
                     'fetchClosedOrders': None,
@@ -364,6 +371,7 @@ class ascendex(Exchange, ImplicitAPI):
                         'untilDays': 100000,
                         'trigger': False,
                         'trailing': False,
+                        'symbolRequired': False,
                     },
                 },
                 'forDerivatives': {
@@ -387,6 +395,7 @@ class ascendex(Exchange, ImplicitAPI):
                         'untilDays': None,
                         'trigger': False,
                         'trailing': False,
+                        'symbolRequired': False,
                     },
                 },
                 'swap': {
@@ -553,7 +562,7 @@ class ascendex(Exchange, ImplicitAPI):
         ids = list(dataById.keys())
         result: dict = {}
         for i in range(0, len(ids)):
-            id = ids[i]
+            id = self.safe_string(ids, i)
             currency = dataById[id]
             code = self.safe_currency_code(id)
             scale = self.safe_string_2(currency, 'precisionScale', 'nativeScale')
@@ -780,7 +789,7 @@ class ascendex(Exchange, ImplicitAPI):
             })
         return result
 
-    def fetch_time(self, params={}):
+    def fetch_time(self, params={}) -> Int:
         """
         fetches the current integer timestamp in milliseconds from the ascendex server
         :param dict [params]: extra parameters specific to the exchange API endpoint
@@ -1956,7 +1965,7 @@ class ascendex(Exchange, ImplicitAPI):
         #         "code": 0,
         #         "data": [
         #             {
-        #                 "avgPx": "0",         # Average filled price of the order
+        #                 "avgPx": "0",        # Average filled price of the order
         #                 "cumFee": "0",       # cumulative fee paid for self order
         #                 "cumFilledQty": "0",  # cumulative filled quantity
         #                 "errorCode": "",     # error code; could be empty

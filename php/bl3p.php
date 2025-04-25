@@ -10,7 +10,7 @@ use ccxt\abstract\bl3p as Exchange;
 
 class bl3p extends Exchange {
 
-    public function describe() {
+    public function describe(): mixed {
         return $this->deep_extend(parent::describe(), array(
             'id' => 'bl3p',
             'name' => 'BL3P',
@@ -488,7 +488,7 @@ class bl3p extends Exchange {
         ));
     }
 
-    public function create_deposit_address(string $code, $params = array ()) {
+    public function create_deposit_address(string $code, $params = array ()): array {
         /**
          * create a $currency deposit address
          *

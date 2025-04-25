@@ -10,7 +10,7 @@ use ccxt\abstract\oxfun as Exchange;
 
 class oxfun extends Exchange {
 
-    public function describe() {
+    public function describe(): mixed {
         return $this->deep_extend(parent::describe(), array(
             'id' => 'oxfun',
             'name' => 'OXFUN',
@@ -273,17 +273,20 @@ class oxfun extends Exchange {
                         'limit' => 500,
                         'daysBack' => 100000, // todo
                         'untilDays' => 7,
+                        'symbolRequired' => false,
                     ),
                     'fetchOrder' => array(
                         'marginMode' => false,
                         'trigger' => false,
                         'trailing' => false,
+                        'symbolRequired' => false,
                     ),
                     'fetchOpenOrders' => array(
                         'marginMode' => false,
                         'limit' => null,
                         'trigger' => false,
                         'trailing' => false,
+                        'symbolRequired' => false,
                     ),
                     'fetchOrders' => null,
                     'fetchClosedOrders' => null, // todo?
@@ -2987,7 +2990,7 @@ class oxfun extends Exchange {
                 'AccessKey' => $this->apiKey,
                 'Timestamp' => $datetime,
                 'Signature' => $signature,
-                'Nonce' => $nonce,
+                'Nonce' => (string) $nonce,
             );
         }
         return array( 'url' => $url, 'method' => $method, 'body' => $body, 'headers' => $headers );

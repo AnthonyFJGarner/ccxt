@@ -50,7 +50,7 @@ public partial class blofin : Exchange
                 { "fetchBorrowRateHistory", false },
                 { "fetchCanceledOrders", false },
                 { "fetchClosedOrder", false },
-                { "fetchClosedOrders", false },
+                { "fetchClosedOrders", true },
                 { "fetchCrossBorrowRate", false },
                 { "fetchCrossBorrowRates", false },
                 { "fetchCurrencies", false },
@@ -263,6 +263,7 @@ public partial class blofin : Exchange
                         { "limit", 100 },
                         { "daysBack", 100000 },
                         { "untilDays", 100000 },
+                        { "symbolRequired", false },
                     } },
                     { "fetchOrder", null },
                     { "fetchOpenOrders", new Dictionary<string, object>() {
@@ -270,6 +271,7 @@ public partial class blofin : Exchange
                         { "limit", 100 },
                         { "trigger", true },
                         { "trailing", false },
+                        { "symbolRequired", false },
                     } },
                     { "fetchOrders", null },
                     { "fetchClosedOrders", new Dictionary<string, object>() {
@@ -280,6 +282,7 @@ public partial class blofin : Exchange
                         { "untilDays", 100000 },
                         { "trigger", true },
                         { "trailing", false },
+                        { "symbolRequired", false },
                     } },
                     { "fetchOHLCV", new Dictionary<string, object>() {
                         { "limit", 1440 },
@@ -309,8 +312,7 @@ public partial class blofin : Exchange
                         { "takeProfitPrice", true },
                         { "attachedStopLossTakeProfit", new Dictionary<string, object>() {
                             { "triggerPriceType", null },
-                            { "limit", true },
-                            { "price", null },
+                            { "price", true },
                         } },
                         { "hedged", true },
                     } },

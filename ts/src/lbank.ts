@@ -17,7 +17,7 @@ import type { Balances, Currency, Dict, Int, Market, Num, OHLCV, Order, OrderBoo
  * @augments Exchange
  */
 export default class lbank extends Exchange {
-    describe () {
+    describe (): any {
         return this.deepExtend (super.describe (), {
             'id': 'lbank',
             'name': 'LBank',
@@ -329,17 +329,20 @@ export default class lbank extends Exchange {
                         'limit': 100,
                         'daysBack': 100000, // todo
                         'untilDays': 2,
+                        'symbolRequired': true,
                     },
                     'fetchOrder': {
                         'marginMode': false,
                         'trigger': false,
                         'trailing': false,
+                        'symbolRequired': true,
                     },
                     'fetchOpenOrders': {
                         'marginMode': false,
                         'limit': 200,
                         'trigger': false,
                         'trailing': false,
+                        'symbolRequired': true,
                     },
                     'fetchOrders': {
                         'marginMode': false,
@@ -348,6 +351,7 @@ export default class lbank extends Exchange {
                         'untilDays': undefined,
                         'trigger': false,
                         'trailing': false,
+                        'symbolRequired': true,
                     },
                     'fetchClosedOrders': undefined, // todo: through fetchOrders "status" -1: Cancelled 0: Unfilled 1: Partially filled 2: Completely filled 3: Partially filled has been cancelled 4: Cancellation is being processed
                     'fetchOHLCV': {
@@ -380,7 +384,7 @@ export default class lbank extends Exchange {
      * @param {object} [params] extra parameters specific to the exchange API endpoint
      * @returns {int} the current integer timestamp in milliseconds from the exchange server
      */
-    async fetchTime (params = {}) {
+    async fetchTime (params = {}): Promise<Int> {
         let type = undefined;
         [ type, params ] = this.handleMarketTypeAndParams ('fetchTime', undefined, params);
         let response = undefined;
@@ -2795,7 +2799,8 @@ export default class lbank extends Exchange {
                         if (resultValue === undefined) {
                             result[code] = this.depositWithdrawFee ([ fee ]);
                         } else {
-                            result[code]['info'].push (fee);
+                            const resultCodeInfo = result[code]['info'];
+                            resultCodeInfo.push (fee);
                         }
                         const chain = this.safeString (fee, 'chain');
                         const networkCode = this.safeString (this.options['inverse-networks'], chain, chain);

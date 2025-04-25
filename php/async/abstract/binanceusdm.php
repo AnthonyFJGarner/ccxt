@@ -664,6 +664,9 @@ abstract class binanceusdm extends \ccxt\async\binance {
     public function sapi_get_portfolio_negative_balance_exchange_record($params = array()) {
         return $this->request('portfolio/negative-balance-exchange-record', 'sapi', 'GET', $params, null, null, array("cost" => 2));
     }
+    public function sapi_get_portfolio_pmloan_history($params = array()) {
+        return $this->request('portfolio/pmloan-history', 'sapi', 'GET', $params, null, null, array("cost" => 5));
+    }
     public function sapi_get_staking_productlist($params = array()) {
         return $this->request('staking/productList', 'sapi', 'GET', $params, null, null, array("cost" => 0.1));
     }
@@ -2293,9 +2296,6 @@ abstract class binanceusdm extends \ccxt\async\binance {
     public function papi_delete_listenkey($params = array()) {
         return $this->request('listenKey', 'papi', 'DELETE', $params, null, null, array("cost" => 0.2));
     }
-    public function papiv2_get_um_account($params = array()) {
-        return $this->request('um/account', 'papiV2', 'GET', $params, null, null, array("cost" => 1));
-    }
     public function sapiGetCopyTradingFuturesUserStatus($params = array()) {
         return $this->request('copyTrading/futures/userStatus', 'sapi', 'GET', $params, null, null, array("cost" => 2));
     }
@@ -2952,6 +2952,9 @@ abstract class binanceusdm extends \ccxt\async\binance {
     }
     public function sapiGetPortfolioNegativeBalanceExchangeRecord($params = array()) {
         return $this->request('portfolio/negative-balance-exchange-record', 'sapi', 'GET', $params, null, null, array("cost" => 2));
+    }
+    public function sapiGetPortfolioPmloanHistory($params = array()) {
+        return $this->request('portfolio/pmloan-history', 'sapi', 'GET', $params, null, null, array("cost" => 5));
     }
     public function sapiGetStakingProductList($params = array()) {
         return $this->request('staking/productList', 'sapi', 'GET', $params, null, null, array("cost" => 0.1));
@@ -4581,8 +4584,5 @@ abstract class binanceusdm extends \ccxt\async\binance {
     }
     public function papiDeleteListenKey($params = array()) {
         return $this->request('listenKey', 'papi', 'DELETE', $params, null, null, array("cost" => 0.2));
-    }
-    public function papiV2GetUmAccount($params = array()) {
-        return $this->request('um/account', 'papiV2', 'GET', $params, null, null, array("cost" => 1));
     }
 }

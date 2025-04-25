@@ -10,7 +10,7 @@ use ccxt\abstract\p2b as Exchange;
 
 class p2b extends Exchange {
 
-    public function describe() {
+    public function describe(): mixed {
         return $this->deep_extend(parent::describe(), array(
             'id' => 'p2b',
             'name' => 'p2b',
@@ -211,6 +211,7 @@ class p2b extends Exchange {
                         'limit' => 100,
                         'daysBack' => 100000, // todo
                         'untilDays' => 1,
+                        'symbolRequired' => true,
                     ),
                     'fetchOrder' => null, // todo
                     'fetchOpenOrders' => array(
@@ -218,6 +219,7 @@ class p2b extends Exchange {
                         'limit' => 100,
                         'trigger' => false,
                         'trailing' => false,
+                        'symbolRequired' => true,
                     ),
                     'fetchOrders' => null, // todo
                     'fetchClosedOrders' => array(
@@ -228,6 +230,7 @@ class p2b extends Exchange {
                         'untilDays' => 1,
                         'trigger' => false,
                         'trailing' => false,
+                        'symbolRequired' => false,
                     ),
                     'fetchOHLCV' => array(
                         'limit' => 500,

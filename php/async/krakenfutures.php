@@ -12,12 +12,12 @@ use ccxt\ArgumentsRequired;
 use ccxt\BadRequest;
 use ccxt\DDoSProtection;
 use ccxt\Precise;
-use React\Async;
-use React\Promise\PromiseInterface;
+use \React\Async;
+use \React\Promise\PromiseInterface;
 
 class krakenfutures extends Exchange {
 
-    public function describe() {
+    public function describe(): mixed {
         return $this->deep_extend(parent::describe(), array(
             'id' => 'krakenfutures',
             'name' => 'Kraken Futures',
@@ -39,6 +39,10 @@ class krakenfutures extends Exchange {
                 'cancelOrders' => true,
                 'createMarketOrder' => false,
                 'createOrder' => true,
+                'createPostOnlyOrder' => true,
+                'createReduceOnlyOrder' => true,
+                'createStopLimitOrder' => true,
+                'createStopMarketOrder' => true,
                 'createStopOrder' => true,
                 'createTriggerOrder' => true,
                 'editOrder' => true,
@@ -301,6 +305,7 @@ class krakenfutures extends Exchange {
                         'limit' => null,
                         'daysBack' => null,
                         'untilDays' => 100000,
+                        'symbolRequired' => false,
                     ),
                     'fetchOrder' => null,
                     'fetchOpenOrders' => array(
@@ -308,6 +313,7 @@ class krakenfutures extends Exchange {
                         'limit' => null,
                         'trigger' => false,
                         'trailing' => false,
+                        'symbolRequired' => false,
                     ),
                     'fetchOrders' => null,
                     'fetchClosedOrders' => array(
@@ -318,6 +324,7 @@ class krakenfutures extends Exchange {
                         'untilDays' => null,
                         'trigger' => false,
                         'trailing' => false,
+                        'symbolRequired' => false,
                     ),
                     'fetchOHLCV' => array(
                         'limit' => 5000,
@@ -1583,13 +1590,13 @@ class krakenfutures extends Exchange {
     }
 
     public function parse_order_type($orderType) {
-        $map = array(
+        $typesMap = array(
             'lmt' => 'limit',
             'mkt' => 'market',
             'post' => 'limit',
             'ioc' => 'market',
         );
-        return $this->safe_string($map, $orderType, $orderType);
+        return $this->safe_string($typesMap, $orderType, $orderType);
     }
 
     public function verify_order_action_success($status, $method, $omit = []) {

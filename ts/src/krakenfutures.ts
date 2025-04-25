@@ -15,7 +15,7 @@ import type { TransferEntry, Int, OrderSide, OrderType, OHLCV, Trade, FundingRat
  * @augments Exchange
  */
 export default class krakenfutures extends Exchange {
-    describe () {
+    describe (): any {
         return this.deepExtend (super.describe (), {
             'id': 'krakenfutures',
             'name': 'Kraken Futures',
@@ -37,6 +37,10 @@ export default class krakenfutures extends Exchange {
                 'cancelOrders': true,
                 'createMarketOrder': false,
                 'createOrder': true,
+                'createPostOnlyOrder': true,
+                'createReduceOnlyOrder': true,
+                'createStopLimitOrder': true,
+                'createStopMarketOrder': true,
                 'createStopOrder': true,
                 'createTriggerOrder': true,
                 'editOrder': true,
@@ -299,6 +303,7 @@ export default class krakenfutures extends Exchange {
                         'limit': undefined,
                         'daysBack': undefined,
                         'untilDays': 100000,
+                        'symbolRequired': false,
                     },
                     'fetchOrder': undefined,
                     'fetchOpenOrders': {
@@ -306,6 +311,7 @@ export default class krakenfutures extends Exchange {
                         'limit': undefined,
                         'trigger': false,
                         'trailing': false,
+                        'symbolRequired': false,
                     },
                     'fetchOrders': undefined,
                     'fetchClosedOrders': {
@@ -316,6 +322,7 @@ export default class krakenfutures extends Exchange {
                         'untilDays': undefined,
                         'trigger': false,
                         'trailing': false,
+                        'symbolRequired': false,
                     },
                     'fetchOHLCV': {
                         'limit': 5000,
@@ -1551,13 +1558,13 @@ export default class krakenfutures extends Exchange {
     }
 
     parseOrderType (orderType) {
-        const map: Dict = {
+        const typesMap: Dict = {
             'lmt': 'limit',
             'mkt': 'market',
             'post': 'limit',
             'ioc': 'market',
         };
-        return this.safeString (map, orderType, orderType);
+        return this.safeString (typesMap, orderType, orderType);
     }
 
     verifyOrderActionSuccess (status, method, omit = []) {

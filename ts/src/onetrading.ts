@@ -14,7 +14,7 @@ import type { Balances, Currencies, Dict, Int, Market, Num, OHLCV, Order, OrderB
  * @augments Exchange
  */
 export default class onetrading extends Exchange {
-    describe () {
+    describe (): any {
         return this.deepExtend (super.describe (), {
             'id': 'onetrading',
             'name': 'One Trading',
@@ -322,17 +322,20 @@ export default class onetrading extends Exchange {
                         'limit': 100,
                         'daysBack': 100000, // todo
                         'untilDays': 100000, // todo
+                        'symbolRequired': false,
                     },
                     'fetchOrder': {
                         'marginMode': false,
                         'trigger': false,
                         'trailing': false,
+                        'symbolRequired': false,
                     },
                     'fetchOpenOrders': {
                         'marginMode': false,
                         'limit': 100,
                         'trigger': false,
                         'trailing': false,
+                        'symbolRequired': false,
                     },
                     'fetchOrders': undefined, // todo
                     'fetchClosedOrders': {
@@ -343,6 +346,7 @@ export default class onetrading extends Exchange {
                         'untilDays': 100000, // todo
                         'trigger': false,
                         'trailing': false,
+                        'symbolRequired': false,
                     },
                     'fetchOHLCV': {
                         'limit': 5000,
@@ -368,7 +372,7 @@ export default class onetrading extends Exchange {
      * @param {object} [params] extra parameters specific to the exchange API endpoint
      * @returns {int} the current integer timestamp in milliseconds from the exchange server
      */
-    async fetchTime (params = {}) {
+    async fetchTime (params = {}): Promise<Int> {
         const response = await this.publicGetTime (params);
         //
         //     {

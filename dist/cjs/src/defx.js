@@ -287,17 +287,20 @@ class defx extends defx$1 {
                         'limit': 1000,
                         'daysBack': undefined,
                         'untilDays': undefined,
+                        'symbolRequired': false,
                     },
                     'fetchOrder': {
                         'marginMode': false,
                         'trigger': false,
                         'trailing': false,
+                        'symbolRequired': false,
                     },
                     'fetchOpenOrders': {
                         'marginMode': true,
                         'limit': 100,
                         'trigger': false,
                         'trailing': false,
+                        'symbolRequired': false,
                     },
                     'fetchOrders': {
                         'marginMode': false,
@@ -306,6 +309,7 @@ class defx extends defx$1 {
                         'untilDays': 100000,
                         'trigger': false,
                         'trailing': false,
+                        'symbolRequired': false,
                     },
                     'fetchClosedOrders': {
                         'marginMode': false,
@@ -315,6 +319,7 @@ class defx extends defx$1 {
                         'untilDays': 100000,
                         'trigger': false,
                         'trailing': false,
+                        'symbolRequired': false,
                     },
                     'fetchOHLCV': {
                         'limit': 1000,
@@ -605,7 +610,7 @@ class defx extends defx$1 {
             'active': this.safeString(market, 'status', '') === 'active',
             'contract': true,
             'linear': true,
-            'inverse': undefined,
+            'inverse': false,
             'taker': this.safeNumber(fees, 'taker'),
             'maker': this.safeNumber(fees, 'maker'),
             'contractSize': this.parseNumber('1'),

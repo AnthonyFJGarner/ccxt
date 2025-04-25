@@ -10,7 +10,7 @@ use ccxt\abstract\digifinex as Exchange;
 
 class digifinex extends Exchange {
 
-    public function describe() {
+    public function describe(): mixed {
         return $this->deep_extend(parent::describe(), array(
             'id' => 'digifinex',
             'name' => 'DigiFinex',
@@ -258,25 +258,27 @@ class digifinex extends Exchange {
                     ),
                     'createOrders' => array(
                         'max' => 10,
-                        'marginMode' => true,
                     ),
                     'fetchMyTrades' => array(
                         'marginMode' => true,
                         'limit' => 500,
                         'daysBack' => 100000, // todo
                         'untilDays' => 30,
+                        'symbolRequired' => false,
                     ),
                     'fetchOrder' => array(
                         'marginMode' => true,
                         'trigger' => false,
                         'trailing' => false,
                         'marketType' => true,
+                        'symbolRequired' => true,
                     ),
                     'fetchOpenOrders' => array(
                         'marginMode' => true,
                         'limit' => null,
                         'trigger' => false,
                         'trailing' => false,
+                        'symbolRequired' => false,
                     ),
                     'fetchOrders' => array(
                         'marginMode' => true,
@@ -285,6 +287,7 @@ class digifinex extends Exchange {
                         'untilDays' => 30,
                         'trigger' => false,
                         'trailing' => false,
+                        'symbolRequired' => false,
                     ),
                     'fetchClosedOrders' => null,
                     'fetchOHLCV' => array(
@@ -546,10 +549,11 @@ class digifinex extends Exchange {
                 ),
             );
             if (is_array($result) && array_key_exists($code, $result)) {
-                if (gettype($result[$code]['info']) === 'array' && array_keys($result[$code]['info']) === array_keys(array_keys($result[$code]['info']))) {
-                    $result[$code]['info'][] = $currency;
+                $resultCodeInfo = $result[$code]['info'];
+                if (gettype($resultCodeInfo) === 'array' && array_keys($resultCodeInfo) === array_keys(array_keys($resultCodeInfo))) {
+                    $resultCodeInfo[] = $currency;
                 } else {
-                    $result[$code]['info'] = [ $result[$code]['info'], $currency ];
+                    $resultCodeInfo = array( $resultCodeInfo, $currency );
                 }
                 if ($withdraw) {
                     $result[$code]['withdraw'] = true;
@@ -1435,7 +1439,7 @@ class digifinex extends Exchange {
         ), $market);
     }
 
-    public function fetch_time($params = array ()) {
+    public function fetch_time($params = array ()): ?int {
         /**
          * fetches the current integer timestamp in milliseconds from the exchange server
          * @param {array} [$params] extra parameters specific to the exchange API endpoint
@@ -4179,7 +4183,8 @@ class digifinex extends Exchange {
                     $depositWithdrawFees[$code] = $this->deposit_withdraw_fee(array());
                     $depositWithdrawFees[$code]['info'] = array();
                 }
-                $depositWithdrawFees[$code]['info'][] = $entry;
+                $depositWithdrawInfo = $depositWithdrawFees[$code]['info'];
+                $depositWithdrawInfo[] = $entry;
                 $networkId = $this->safe_string($entry, 'chain');
                 $withdrawFee = $this->safe_value($entry, 'min_withdraw_fee');
                 $withdrawResult = array(

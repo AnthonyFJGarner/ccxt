@@ -15,7 +15,7 @@ import type { Dict, int, Num, Strings, Int, Str, Market, OrderType, OrderSide, O
  * @augments Exchange
  */
 export default class defx extends Exchange {
-    describe () {
+    describe (): any {
         return this.deepExtend (super.describe (), {
             'id': 'defx',
             'name': 'Defx X',
@@ -289,17 +289,20 @@ export default class defx extends Exchange {
                         'limit': 1000,
                         'daysBack': undefined,
                         'untilDays': undefined,
+                        'symbolRequired': false,
                     },
                     'fetchOrder': {
                         'marginMode': false,
                         'trigger': false,
                         'trailing': false,
+                        'symbolRequired': false,
                     },
                     'fetchOpenOrders': {
                         'marginMode': true,
                         'limit': 100,
                         'trigger': false,
                         'trailing': false,
+                        'symbolRequired': false,
                     },
                     'fetchOrders': {
                         'marginMode': false,
@@ -308,6 +311,7 @@ export default class defx extends Exchange {
                         'untilDays': 100000,
                         'trigger': false,
                         'trailing': false,
+                        'symbolRequired': false,
                     },
                     'fetchClosedOrders': {
                         'marginMode': false,
@@ -317,6 +321,7 @@ export default class defx extends Exchange {
                         'untilDays': 100000,
                         'trigger': false,
                         'trailing': false,
+                        'symbolRequired': false,
                     },
                     'fetchOHLCV': {
                         'limit': 1000,
@@ -399,7 +404,7 @@ export default class defx extends Exchange {
      * @param {object} [params] extra parameters specific to the exchange API endpoint
      * @returns {int} the current integer timestamp in milliseconds from the exchange server
      */
-    async fetchTime (params = {}) {
+    async fetchTime (params = {}): Promise<Int> {
         const response = await this.v1PublicGetHealthcheckPing (params);
         //
         // {
@@ -610,7 +615,7 @@ export default class defx extends Exchange {
             'active': this.safeString (market, 'status', '') === 'active',
             'contract': true,
             'linear': true,
-            'inverse': undefined,
+            'inverse': false,
             'taker': this.safeNumber (fees, 'taker'),
             'maker': this.safeNumber (fees, 'maker'),
             'contractSize': this.parseNumber ('1'),

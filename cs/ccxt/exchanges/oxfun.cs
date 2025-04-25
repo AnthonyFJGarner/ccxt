@@ -260,17 +260,20 @@ public partial class oxfun : Exchange
                         { "limit", 500 },
                         { "daysBack", 100000 },
                         { "untilDays", 7 },
+                        { "symbolRequired", false },
                     } },
                     { "fetchOrder", new Dictionary<string, object>() {
                         { "marginMode", false },
                         { "trigger", false },
                         { "trailing", false },
+                        { "symbolRequired", false },
                     } },
                     { "fetchOpenOrders", new Dictionary<string, object>() {
                         { "marginMode", false },
                         { "limit", null },
                         { "trigger", false },
                         { "trailing", false },
+                        { "symbolRequired", false },
                     } },
                     { "fetchOrders", null },
                     { "fetchClosedOrders", null },
@@ -3144,7 +3147,7 @@ public partial class oxfun : Exchange
                 { "AccessKey", this.apiKey },
                 { "Timestamp", datetime },
                 { "Signature", signature },
-                { "Nonce", nonce },
+                { "Nonce", ((object)nonce).ToString() },
             };
         }
         return new Dictionary<string, object>() {

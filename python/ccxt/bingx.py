@@ -7,7 +7,7 @@ from ccxt.base.exchange import Exchange
 from ccxt.abstract.bingx import ImplicitAPI
 import hashlib
 import numbers
-from ccxt.base.types import Balances, Currencies, Currency, DepositAddress, Int, Leverage, MarginMode, MarginModification, Market, Num, Order, OrderBook, OrderRequest, OrderSide, OrderType, Position, Str, Strings, Ticker, Tickers, FundingRate, FundingRates, Trade, TradingFeeInterface, Transaction, TransferEntry
+from ccxt.base.types import Any, Balances, Currencies, Currency, DepositAddress, Int, Leverage, MarginMode, MarginModification, Market, Num, Order, OrderBook, OrderRequest, OrderSide, OrderType, Position, Str, Strings, Ticker, Tickers, FundingRate, FundingRates, Trade, TradingFeeInterface, Transaction, TransferEntry
 from typing import List
 from ccxt.base.errors import ExchangeError
 from ccxt.base.errors import AuthenticationError
@@ -28,7 +28,7 @@ from ccxt.base.precise import Precise
 
 class bingx(Exchange, ImplicitAPI):
 
-    def describe(self):
+    def describe(self) -> Any:
         return self.deep_extend(super(bingx, self).describe(), {
             'id': 'bingx',
             'name': 'BingX',
@@ -57,6 +57,7 @@ class bingx(Exchange, ImplicitAPI):
                 'createOrder': True,
                 'createOrders': True,
                 'createOrderWithTakeProfitAndStopLoss': True,
+                'createReduceOnlyOrder': True,
                 'createStopLossOrder': True,
                 'createStopOrder': True,
                 'createTakeProfitOrder': True,
@@ -400,6 +401,7 @@ class bingx(Exchange, ImplicitAPI):
                                 'uid': 1,
                                 'apiKey/query': 2,
                                 'account/apiPermissions': 5,
+                                'allAccountBalance': 2,
                             },
                             'post': {
                                 'innerTransfer/authorizeSubAccount': 1,
@@ -518,6 +520,8 @@ class bingx(Exchange, ImplicitAPI):
                 'SNOW': 'Snowman',  # Snowman vs SnowSwap conflict
                 'OMNI': 'OmniCat',
                 'NAP': '$NAP',  # NAP on SOL = SNAP
+                'TRUMP': 'TRUMPMAGA',
+                'TRUMPSOL': 'TRUMP',
             },
             'options': {
                 'defaultType': 'spot',
@@ -589,17 +593,20 @@ class bingx(Exchange, ImplicitAPI):
                         'limit': 512,  # 512 days for 'allFillOrders', 1000 days for 'fillOrders'
                         'daysBack': 30,  # 30 for 'allFillOrders', 7 for 'fillHistory'
                         'untilDays': 30,  # 30 for 'allFillOrders', 7 for 'fillHistory'
+                        'symbolRequired': True,
                     },
                     'fetchOrder': {
                         'marginMode': False,
                         'trigger': False,
                         'trailing': False,
+                        'symbolRequired': True,
                     },
                     'fetchOpenOrders': {
                         'marginMode': False,
                         'limit': None,
                         'trigger': False,
                         'trailing': False,
+                        'symbolRequired': False,
                     },
                     'fetchOrders': {
                         'marginMode': False,
@@ -608,6 +615,7 @@ class bingx(Exchange, ImplicitAPI):
                         'untilDays': 7,
                         'trigger': False,
                         'trailing': False,
+                        'symbolRequired': True,
                     },
                     'fetchClosedOrders': {
                         'marginMode': False,
@@ -617,6 +625,7 @@ class bingx(Exchange, ImplicitAPI):
                         'untilDays': 7,
                         'trigger': False,
                         'trailing': False,
+                        'symbolRequired': True,
                     },
                     'fetchOHLCV': {
                         'limit': 1440,
@@ -629,19 +638,7 @@ class bingx(Exchange, ImplicitAPI):
                         'daysBack': None,
                         'untilDays': None,
                     },
-                    'fetchOHLCV': {
-                        'limit': 1440,
-                    },
                     'fetchOrders': None,
-                    'fetchClosedOrders': {
-                        'marginMode': False,
-                        'limit': 1000,
-                        'daysBack': None,
-                        'daysBackCanceled': None,
-                        'untilDays': 7,
-                        'trigger': False,
-                        'trailing': False,
-                    },
                 },
                 #
                 'spot': {
@@ -670,18 +667,22 @@ class bingx(Exchange, ImplicitAPI):
                         'extends': 'defaultForInverse',
                     },
                 },
+                'defaultForFuture': {
+                    'extends': 'defaultForLinear',
+                    'fetchOrders': None,
+                },
                 'future': {
                     'linear': {
-                        'extends': 'defaultForLinear',
+                        'extends': 'defaultForFuture',
                     },
                     'inverse': {
-                        'extends': 'defaultForInverse',
+                        'extends': 'defaultForFuture',
                     },
                 },
             },
         })
 
-    def fetch_time(self, params={}):
+    def fetch_time(self, params={}) -> Int:
         """
         fetches the current integer timestamp in milliseconds from the bingx server
 
@@ -818,7 +819,7 @@ class bingx(Exchange, ImplicitAPI):
             }
         return result
 
-    def fetch_spot_markets(self, params):
+    def fetch_spot_markets(self, params) -> List[Market]:
         response = self.spotV1PublicGetCommonSymbols(params)
         #
         #    {
@@ -830,7 +831,7 @@ class bingx(Exchange, ImplicitAPI):
         #                  {
         #                    "symbol": "GEAR-USDT",
         #                    "minQty": 735,  # deprecated
-        #                    "maxQty": 2941177,  # deprecated
+        #                    "maxQty": 2941177,  # deprecated.
         #                    "minNotional": 5,
         #                    "maxNotional": 20000,
         #                    "status": 1,
@@ -1429,62 +1430,82 @@ class bingx(Exchange, ImplicitAPI):
         # spot
         #
         #     {
-        #         "code": 0,
-        #         "data": {
-        #           "bids": [
-        #             [
-        #               "26324.73",
-        #               "0.37655"
+        #         "code":0,
+        #         "timestamp":1743240504535,
+        #         "data":{
+        #             "bids":[
+        #                 ["83775.39","1.981875"],
+        #                 ["83775.38","0.001076"],
+        #                 ["83775.34","0.254716"],
         #             ],
-        #             [
-        #               "26324.71",
-        #               "0.31888"
+        #             "asks":[
+        #                 ["83985.40","0.000013"],
+        #                 ["83980.00","0.000011"],
+        #                 ["83975.70","0.000061000000000000005"],
         #             ],
-        #         ],
-        #         "asks": [
-        #             [
-        #               "26340.30",
-        #               "6.45221"
-        #             ],
-        #             [
-        #               "26340.15",
-        #               "6.73261"
-        #             ],
-        #         ]}
+        #             "ts":1743240504535,
+        #             "lastUpdateId":13565639906
+        #         }
         #     }
         #
-        # swap
+        #
+        # linear swap
         #
         #     {
-        #         "code": 0,
-        #         "msg": "",
-        #         "data": {
-        #           "T": 1683914263304,
-        #           "bids": [
-        #             [
-        #               "26300.90000000",
-        #               "30408.00000000"
+        #         "code":0,
+        #         "msg":"",
+        #         "data":{
+        #             "T":1743240836255,
+        #             "bids":[
+        #                 ["83760.7","7.0861"],
+        #                 ["83760.6","0.0044"],
+        #                 ["83757.7","1.9526"],
         #             ],
-        #             [
-        #               "26300.80000000",
-        #               "50906.00000000"
+        #             "asks":[
+        #                 ["83784.3","8.3531"],
+        #                 ["83782.8","23.7289"],
+        #                 ["83780.1","18.0617"],
         #             ],
-        #         ],
-        #         "asks": [
-        #             [
-        #               "26301.00000000",
-        #               "43616.00000000"
+        #             "bidsCoin":[
+        #                 ["83760.7","0.0007"],
+        #                 ["83760.6","0.0000"],
+        #                 ["83757.7","0.0002"],
         #             ],
-        #             [
-        #               "26301.10000000",
-        #               "49402.00000000"
+        #             "asksCoin":[
+        #                 ["83784.3","0.0008"],
+        #                 ["83782.8","0.0024"],
+        #                 ["83780.1","0.0018"],
+        #             ]
+        #         }
+        #     }
+        #
+        # inverse swap
+        #
+        #     {
+        #         "code":0,
+        #         "msg":"",
+        #         "timestamp":1743240979146,
+        #         "data":{
+        #             "T":1743240978691,
+        #             "bids":[
+        #                 ["83611.4","241.0"],
+        #                 ["83611.3","1.0"],
+        #                 ["83602.9","666.0"],
         #             ],
-        #         ]}
+        #             "asks":[
+        #                 ["83645.0","4253.0"],
+        #                 ["83640.5","3188.0"],
+        #                 ["83636.0","5540.0"],
+        #             ]
+        #         }
         #     }
         #
         orderbook = self.safe_dict(response, 'data', {})
+        nonce = self.safe_integer(orderbook, 'lastUpdateId')
         timestamp = self.safe_integer_2(orderbook, 'T', 'ts')
-        return self.parse_order_book(orderbook, market['symbol'], timestamp, 'bids', 'asks', 0, 1)
+        result = self.parse_order_book(orderbook, market['symbol'], timestamp, 'bids', 'asks', 0, 1)
+        result['nonce'] = nonce
+        return result
 
     def fetch_funding_rate(self, symbol: str, params={}) -> FundingRate:
         """
@@ -2657,10 +2678,8 @@ class bingx(Exchange, ImplicitAPI):
         :param dict [params]: extra parameters specific to the exchange API endpoint
         :returns dict: an `order structure <https://docs.ccxt.com/#/?id=order-structure>`
         """
-        req = {
-            'quoteOrderQty': cost,
-        }
-        return self.create_order(symbol, 'market', side, cost, None, self.extend(req, params))
+        params['quoteOrderQty'] = cost
+        return self.create_order(symbol, 'market', side, cost, None, params)
 
     def create_market_buy_order_with_cost(self, symbol: str, cost: float, params={}):
         """
@@ -2670,10 +2689,8 @@ class bingx(Exchange, ImplicitAPI):
         :param dict [params]: extra parameters specific to the exchange API endpoint
         :returns dict: an `order structure <https://docs.ccxt.com/#/?id=order-structure>`
         """
-        req = {
-            'quoteOrderQty': cost,
-        }
-        return self.create_order(symbol, 'market', 'buy', cost, None, self.extend(req, params))
+        params['quoteOrderQty'] = cost
+        return self.create_order(symbol, 'market', 'buy', cost, None, params)
 
     def create_market_sell_order_with_cost(self, symbol: str, cost: float, params={}):
         """
@@ -2683,10 +2700,8 @@ class bingx(Exchange, ImplicitAPI):
         :param dict [params]: extra parameters specific to the exchange API endpoint
         :returns dict: an `order structure <https://docs.ccxt.com/#/?id=order-structure>`
         """
-        req = {
-            'quoteOrderQty': cost,
-        }
-        return self.create_order(symbol, 'market', 'sell', cost, None, self.extend(req, params))
+        params['quoteOrderQty'] = cost
+        return self.create_order(symbol, 'market', 'sell', cost, None, params)
 
     def create_order_request(self, symbol: str, type: OrderType, side: OrderSide, amount: float, price: Num = None, params={}):
         """
@@ -2869,7 +2884,10 @@ class bingx(Exchange, ImplicitAPI):
             else:
                 positionSide = 'BOTH'
             request['positionSide'] = positionSide
-            request['quantity'] = amount if (market['inverse']) else self.parse_to_numeric(self.amount_to_precision(symbol, amount))  # precision not available for inverse contracts
+            amountReq = amount
+            if not market['inverse']:
+                amountReq = self.parse_to_numeric(self.amount_to_precision(symbol, amount))
+            request['quantity'] = amountReq  # precision not available for inverse contracts
         params = self.omit(params, ['hedged', 'triggerPrice', 'stopLossPrice', 'takeProfitPrice', 'trailingAmount', 'trailingPercent', 'trailingType', 'takeProfit', 'stopLoss', 'clientOrderId'])
         return self.extend(request, params)
 
@@ -4458,13 +4476,12 @@ class bingx(Exchange, ImplicitAPI):
         :param boolean [params.twap]: if fetching twap orders
         :returns dict[]: a list of `order structures <https://docs.ccxt.com/#/?id=order-structure>`
         """
-        if symbol is None:
-            raise ArgumentsRequired(self.id + ' fetchClosedOrders() requires a symbol argument')
         self.load_markets()
-        market = self.market(symbol)
-        request: dict = {
-            'symbol': market['id'],
-        }
+        market = None
+        request: dict = {}
+        if symbol is not None:
+            market = self.market(symbol)
+            request['symbol'] = market['id']
         type = None
         subType = None
         standard = None
@@ -4476,7 +4493,7 @@ class bingx(Exchange, ImplicitAPI):
             response = self.contractV1PrivateGetAllOrders(self.extend(request, params))
         elif type == 'spot':
             if limit is not None:
-                request['limit'] = limit
+                request['pageSize'] = limit
             response = self.spotV1PrivateGetTradeHistoryOrders(self.extend(request, params))
             #
             #    {
@@ -5533,7 +5550,7 @@ class bingx(Exchange, ImplicitAPI):
         request: dict = {
             'coin': currency['id'],
             'address': address,
-            'amount': self.number_to_string(amount),
+            'amount': self.currency_to_precision(code, amount),
             'walletType': walletType,
         }
         network = self.safe_string_upper(params, 'network')

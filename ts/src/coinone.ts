@@ -15,7 +15,7 @@ import type { Balances, Currencies, Dict, Int, Market, Num, Order, OrderBook, Or
  * @augments Exchange
  */
 export default class coinone extends Exchange {
-    describe () {
+    describe (): any {
         return this.deepExtend (super.describe (), {
             'id': 'coinone',
             'name': 'CoinOne',
@@ -223,17 +223,20 @@ export default class coinone extends Exchange {
                         'limit': 100, // todo implement
                         'daysBack': 100000, // todo implement
                         'untilDays': 100000, // todo implement
+                        'symbolRequired': true,
                     },
                     'fetchOrder': {
                         'marginMode': false,
                         'trigger': false,
                         'trailing': false,
+                        'symbolRequired': true,
                     },
                     'fetchOpenOrders': {
                         'marginMode': false,
                         'limit': undefined,
                         'trigger': false,
                         'trailing': false,
+                        'symbolRequired': true,
                     },
                     'fetchOrders': undefined,
                     'fetchClosedOrders': undefined, // todo implement

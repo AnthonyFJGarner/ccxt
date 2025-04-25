@@ -42,6 +42,7 @@ class bingx extends bingx$1 {
                 'createOrder': true,
                 'createOrders': true,
                 'createOrderWithTakeProfitAndStopLoss': true,
+                'createReduceOnlyOrder': true,
                 'createStopLossOrder': true,
                 'createStopOrder': true,
                 'createTakeProfitOrder': true,
@@ -385,6 +386,7 @@ class bingx extends bingx$1 {
                                 'uid': 1,
                                 'apiKey/query': 2,
                                 'account/apiPermissions': 5,
+                                'allAccountBalance': 2,
                             },
                             'post': {
                                 'innerTransfer/authorizeSubAccount': 1,
@@ -502,7 +504,9 @@ class bingx extends bingx$1 {
             'commonCurrencies': {
                 'SNOW': 'Snowman',
                 'OMNI': 'OmniCat',
-                'NAP': '$NAP', // NAP on SOL = SNAP
+                'NAP': '$NAP',
+                'TRUMP': 'TRUMPMAGA',
+                'TRUMPSOL': 'TRUMP',
             },
             'options': {
                 'defaultType': 'spot',
@@ -573,18 +577,21 @@ class bingx extends bingx$1 {
                         'marginMode': false,
                         'limit': 512,
                         'daysBack': 30,
-                        'untilDays': 30, // 30 for 'allFillOrders', 7 for 'fillHistory'
+                        'untilDays': 30,
+                        'symbolRequired': true,
                     },
                     'fetchOrder': {
                         'marginMode': false,
                         'trigger': false,
                         'trailing': false,
+                        'symbolRequired': true,
                     },
                     'fetchOpenOrders': {
                         'marginMode': false,
                         'limit': undefined,
                         'trigger': false,
                         'trailing': false,
+                        'symbolRequired': false,
                     },
                     'fetchOrders': {
                         'marginMode': false,
@@ -593,6 +600,7 @@ class bingx extends bingx$1 {
                         'untilDays': 7,
                         'trigger': false,
                         'trailing': false,
+                        'symbolRequired': true,
                     },
                     'fetchClosedOrders': {
                         'marginMode': false,
@@ -602,6 +610,7 @@ class bingx extends bingx$1 {
                         'untilDays': 7,
                         'trigger': false,
                         'trailing': false,
+                        'symbolRequired': true,
                     },
                     'fetchOHLCV': {
                         'limit': 1440,
@@ -614,19 +623,7 @@ class bingx extends bingx$1 {
                         'daysBack': undefined,
                         'untilDays': undefined,
                     },
-                    'fetchOHLCV': {
-                        'limit': 1440,
-                    },
                     'fetchOrders': undefined,
-                    'fetchClosedOrders': {
-                        'marginMode': false,
-                        'limit': 1000,
-                        'daysBack': undefined,
-                        'daysBackCanceled': undefined,
-                        'untilDays': 7,
-                        'trigger': false,
-                        'trailing': false,
-                    },
                 },
                 //
                 'spot': {
@@ -655,12 +652,16 @@ class bingx extends bingx$1 {
                         'extends': 'defaultForInverse',
                     },
                 },
+                'defaultForFuture': {
+                    'extends': 'defaultForLinear',
+                    'fetchOrders': undefined,
+                },
                 'future': {
                     'linear': {
-                        'extends': 'defaultForLinear',
+                        'extends': 'defaultForFuture',
                     },
                     'inverse': {
-                        'extends': 'defaultForInverse',
+                        'extends': 'defaultForFuture',
                     },
                 },
             },
@@ -822,7 +823,7 @@ class bingx extends bingx$1 {
         //                  {
         //                    "symbol": "GEAR-USDT",
         //                    "minQty": 735, // deprecated
-        //                    "maxQty": 2941177, // deprecated
+        //                    "maxQty": 2941177, // deprecated.
         //                    "minNotional": 5,
         //                    "maxNotional": 20000,
         //                    "status": 1,
@@ -1458,62 +1459,82 @@ class bingx extends bingx$1 {
         // spot
         //
         //     {
-        //         "code": 0,
-        //         "data": {
-        //           "bids": [
-        //             [
-        //               "26324.73",
-        //               "0.37655"
+        //         "code":0,
+        //         "timestamp":1743240504535,
+        //         "data":{
+        //             "bids":[
+        //                 ["83775.39","1.981875"],
+        //                 ["83775.38","0.001076"],
+        //                 ["83775.34","0.254716"],
         //             ],
-        //             [
-        //               "26324.71",
-        //               "0.31888"
+        //             "asks":[
+        //                 ["83985.40","0.000013"],
+        //                 ["83980.00","0.000011"],
+        //                 ["83975.70","0.000061000000000000005"],
         //             ],
-        //         ],
-        //         "asks": [
-        //             [
-        //               "26340.30",
-        //               "6.45221"
-        //             ],
-        //             [
-        //               "26340.15",
-        //               "6.73261"
-        //             ],
-        //         ]}
+        //             "ts":1743240504535,
+        //             "lastUpdateId":13565639906
+        //         }
         //     }
         //
-        // swap
+        //
+        // linear swap
         //
         //     {
-        //         "code": 0,
-        //         "msg": "",
-        //         "data": {
-        //           "T": 1683914263304,
-        //           "bids": [
-        //             [
-        //               "26300.90000000",
-        //               "30408.00000000"
+        //         "code":0,
+        //         "msg":"",
+        //         "data":{
+        //             "T":1743240836255,
+        //             "bids":[
+        //                 ["83760.7","7.0861"],
+        //                 ["83760.6","0.0044"],
+        //                 ["83757.7","1.9526"],
         //             ],
-        //             [
-        //               "26300.80000000",
-        //               "50906.00000000"
+        //             "asks":[
+        //                 ["83784.3","8.3531"],
+        //                 ["83782.8","23.7289"],
+        //                 ["83780.1","18.0617"],
         //             ],
-        //         ],
-        //         "asks": [
-        //             [
-        //               "26301.00000000",
-        //               "43616.00000000"
+        //             "bidsCoin":[
+        //                 ["83760.7","0.0007"],
+        //                 ["83760.6","0.0000"],
+        //                 ["83757.7","0.0002"],
         //             ],
-        //             [
-        //               "26301.10000000",
-        //               "49402.00000000"
+        //             "asksCoin":[
+        //                 ["83784.3","0.0008"],
+        //                 ["83782.8","0.0024"],
+        //                 ["83780.1","0.0018"],
+        //             ]
+        //         }
+        //     }
+        //
+        // inverse swap
+        //
+        //     {
+        //         "code":0,
+        //         "msg":"",
+        //         "timestamp":1743240979146,
+        //         "data":{
+        //             "T":1743240978691,
+        //             "bids":[
+        //                 ["83611.4","241.0"],
+        //                 ["83611.3","1.0"],
+        //                 ["83602.9","666.0"],
         //             ],
-        //         ]}
+        //             "asks":[
+        //                 ["83645.0","4253.0"],
+        //                 ["83640.5","3188.0"],
+        //                 ["83636.0","5540.0"],
+        //             ]
+        //         }
         //     }
         //
         const orderbook = this.safeDict(response, 'data', {});
+        const nonce = this.safeInteger(orderbook, 'lastUpdateId');
         const timestamp = this.safeInteger2(orderbook, 'T', 'ts');
-        return this.parseOrderBook(orderbook, market['symbol'], timestamp, 'bids', 'asks', 0, 1);
+        const result = this.parseOrderBook(orderbook, market['symbol'], timestamp, 'bids', 'asks', 0, 1);
+        result['nonce'] = nonce;
+        return result;
     }
     /**
      * @method
@@ -2744,10 +2765,8 @@ class bingx extends bingx$1 {
      * @returns {object} an [order structure]{@link https://docs.ccxt.com/#/?id=order-structure}
      */
     async createMarketOrderWithCost(symbol, side, cost, params = {}) {
-        const req = {
-            'quoteOrderQty': cost,
-        };
-        return await this.createOrder(symbol, 'market', side, cost, undefined, this.extend(req, params));
+        params['quoteOrderQty'] = cost;
+        return await this.createOrder(symbol, 'market', side, cost, undefined, params);
     }
     /**
      * @method
@@ -2759,10 +2778,8 @@ class bingx extends bingx$1 {
      * @returns {object} an [order structure]{@link https://docs.ccxt.com/#/?id=order-structure}
      */
     async createMarketBuyOrderWithCost(symbol, cost, params = {}) {
-        const req = {
-            'quoteOrderQty': cost,
-        };
-        return await this.createOrder(symbol, 'market', 'buy', cost, undefined, this.extend(req, params));
+        params['quoteOrderQty'] = cost;
+        return await this.createOrder(symbol, 'market', 'buy', cost, undefined, params);
     }
     /**
      * @method
@@ -2774,10 +2791,8 @@ class bingx extends bingx$1 {
      * @returns {object} an [order structure]{@link https://docs.ccxt.com/#/?id=order-structure}
      */
     async createMarketSellOrderWithCost(symbol, cost, params = {}) {
-        const req = {
-            'quoteOrderQty': cost,
-        };
-        return await this.createOrder(symbol, 'market', 'sell', cost, undefined, this.extend(req, params));
+        params['quoteOrderQty'] = cost;
+        return await this.createOrder(symbol, 'market', 'sell', cost, undefined, params);
     }
     createOrderRequest(symbol, type, side, amount, price = undefined, params = {}) {
         /**
@@ -3005,7 +3020,11 @@ class bingx extends bingx$1 {
                 positionSide = 'BOTH';
             }
             request['positionSide'] = positionSide;
-            request['quantity'] = (market['inverse']) ? amount : this.parseToNumeric(this.amountToPrecision(symbol, amount)); // precision not available for inverse contracts
+            let amountReq = amount;
+            if (!market['inverse']) {
+                amountReq = this.parseToNumeric(this.amountToPrecision(symbol, amount));
+            }
+            request['quantity'] = amountReq; // precision not available for inverse contracts
         }
         params = this.omit(params, ['hedged', 'triggerPrice', 'stopLossPrice', 'takeProfitPrice', 'trailingAmount', 'trailingPercent', 'trailingType', 'takeProfit', 'stopLoss', 'clientOrderId']);
         return this.extend(request, params);
@@ -4670,14 +4689,13 @@ class bingx extends bingx$1 {
      * @returns {object[]} a list of [order structures]{@link https://docs.ccxt.com/#/?id=order-structure}
      */
     async fetchCanceledAndClosedOrders(symbol = undefined, since = undefined, limit = undefined, params = {}) {
-        if (symbol === undefined) {
-            throw new errors.ArgumentsRequired(this.id + ' fetchClosedOrders() requires a symbol argument');
-        }
         await this.loadMarkets();
-        const market = this.market(symbol);
-        const request = {
-            'symbol': market['id'],
-        };
+        let market = undefined;
+        const request = {};
+        if (symbol !== undefined) {
+            market = this.market(symbol);
+            request['symbol'] = market['id'];
+        }
         let type = undefined;
         let subType = undefined;
         let standard = undefined;
@@ -4690,7 +4708,7 @@ class bingx extends bingx$1 {
         }
         else if (type === 'spot') {
             if (limit !== undefined) {
-                request['limit'] = limit;
+                request['pageSize'] = limit;
             }
             response = await this.spotV1PrivateGetTradeHistoryOrders(this.extend(request, params));
             //
@@ -5797,7 +5815,7 @@ class bingx extends bingx$1 {
         const request = {
             'coin': currency['id'],
             'address': address,
-            'amount': this.numberToString(amount),
+            'amount': this.currencyToPrecision(code, amount),
             'walletType': walletType,
         };
         const network = this.safeStringUpper(params, 'network');

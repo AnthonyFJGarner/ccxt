@@ -15,7 +15,7 @@ import type { Account, Balances, Bool, Currencies, Currency, Dict, Int, Market, 
  * @augments Exchange
  */
 export default class oxfun extends Exchange {
-    describe () {
+    describe (): any {
         return this.deepExtend (super.describe (), {
             'id': 'oxfun',
             'name': 'OXFUN',
@@ -278,17 +278,20 @@ export default class oxfun extends Exchange {
                         'limit': 500,
                         'daysBack': 100000, // todo
                         'untilDays': 7,
+                        'symbolRequired': false,
                     },
                     'fetchOrder': {
                         'marginMode': false,
                         'trigger': false,
                         'trailing': false,
+                        'symbolRequired': false,
                     },
                     'fetchOpenOrders': {
                         'marginMode': false,
                         'limit': undefined,
                         'trigger': false,
                         'trailing': false,
+                        'symbolRequired': false,
                     },
                     'fetchOrders': undefined,
                     'fetchClosedOrders': undefined, // todo?
@@ -2992,7 +2995,7 @@ export default class oxfun extends Exchange {
                 'AccessKey': this.apiKey,
                 'Timestamp': datetime,
                 'Signature': signature,
-                'Nonce': nonce,
+                'Nonce': nonce.toString (),
             };
         }
         return { 'url': url, 'method': method, 'body': body, 'headers': headers };

@@ -10,7 +10,7 @@ use ccxt\abstract\bitflyer as Exchange;
 
 class bitflyer extends Exchange {
 
-    public function describe() {
+    public function describe(): mixed {
         return $this->deep_extend(parent::describe(), array(
             'id' => 'bitflyer',
             'name' => 'bitFlyer',
@@ -146,17 +146,20 @@ class bitflyer extends Exchange {
                         'limit' => 100,
                         'daysBack' => null,
                         'untilDays' => null,
+                        'symbolRequired' => true,
                     ),
                     'fetchOrder' => array(
                         'marginMode' => false,
                         'trigger' => false,
                         'trailing' => false,
+                        'symbolRequired' => true,
                     ),
                     'fetchOpenOrders' => array(
                         'marginMode' => false,
                         'limit' => 100,
                         'trigger' => false,
                         'trailing' => false,
+                        'symbolRequired' => true,
                     ),
                     'fetchOrders' => array(
                         'marginMode' => false,
@@ -165,6 +168,7 @@ class bitflyer extends Exchange {
                         'untilDays' => null,
                         'trigger' => false,
                         'trailing' => false,
+                        'symbolRequired' => true,
                     ),
                     'fetchClosedOrders' => array(
                         'marginMode' => false,
@@ -174,6 +178,7 @@ class bitflyer extends Exchange {
                         'untilDays' => null,
                         'trigger' => false,
                         'trailing' => false,
+                        'symbolRequired' => true,
                     ),
                     'fetchOHLCV' => null,
                 ),
@@ -240,6 +245,7 @@ class bitflyer extends Exchange {
         //         array( "product_code" => "BCH_BTC", "market_type" => "Spot" ),
         //         // forex $swap
         //         array( "product_code" => "FX_BTC_JPY", "market_type" => "FX" ),
+        //
         //         // $future
         //         array(
         //             "product_code" => "BTCJPY11FEB2022",

@@ -5,7 +5,7 @@
 
 from ccxt.base.exchange import Exchange
 from ccxt.abstract.upbit import ImplicitAPI
-from ccxt.base.types import Balances, Currency, DepositAddress, Int, Market, Num, Order, OrderBook, OrderSide, OrderType, Str, Strings, Ticker, Tickers, Trade, TradingFeeInterface, Transaction
+from ccxt.base.types import Any, Balances, Currency, DepositAddress, Int, Market, Num, Order, OrderBook, OrderSide, OrderType, Str, Strings, Ticker, Tickers, OrderBooks, Trade, TradingFeeInterface, TradingFees, Transaction
 from typing import List
 from ccxt.base.errors import ExchangeError
 from ccxt.base.errors import AuthenticationError
@@ -22,13 +22,13 @@ from ccxt.base.precise import Precise
 
 class upbit(Exchange, ImplicitAPI):
 
-    def describe(self):
+    def describe(self) -> Any:
         return self.deep_extend(super(upbit, self).describe(), {
             'id': 'upbit',
             'name': 'Upbit',
             'countries': ['KR'],
             'version': 'v1',
-            'rateLimit': 1000,
+            'rateLimit': 50,
             'pro': True,
             # new metainfo interface
             'has': {
@@ -75,7 +75,7 @@ class upbit(Exchange, ImplicitAPI):
                 'fetchTickers': True,
                 'fetchTrades': True,
                 'fetchTradingFee': True,
-                'fetchTradingFees': False,
+                'fetchTradingFees': True,
                 'fetchTransactions': False,
                 'fetchWithdrawal': True,
                 'fetchWithdrawals': True,
@@ -83,6 +83,7 @@ class upbit(Exchange, ImplicitAPI):
                 'withdraw': True,
             },
             'timeframes': {
+                '1s': 'seconds',
                 '1m': 'minutes',
                 '3m': 'minutes',
                 '5m': 'minutes',
@@ -94,6 +95,7 @@ class upbit(Exchange, ImplicitAPI):
                 '1d': 'days',
                 '1w': 'weeks',
                 '1M': 'months',
+                '1y': 'years',
             },
             'hostname': 'api.upbit.com',
             'urls': {
@@ -107,54 +109,70 @@ class upbit(Exchange, ImplicitAPI):
                 'fees': 'https://upbit.com/service_center/guide',
             },
             'api': {
+                # 'endpoint','API Cost'
+                # cost = 1000 / (rateLimit * RPS)
                 'public': {
-                    'get': [
-                        'market/all',
-                        'candles/{timeframe}',
-                        'candles/{timeframe}/{unit}',
-                        'candles/minutes/{unit}',
-                        'candles/minutes/1',
-                        'candles/minutes/3',
-                        'candles/minutes/5',
-                        'candles/minutes/10',
-                        'candles/minutes/15',
-                        'candles/minutes/30',
-                        'candles/minutes/60',
-                        'candles/minutes/240',
-                        'candles/days',
-                        'candles/weeks',
-                        'candles/months',
-                        'trades/ticks',
-                        'ticker',
-                        'orderbook',
-                    ],
+                    'get': {
+                        'market/all': 2,  # RPS: 10
+                        'candles/{timeframe}': 2,
+                        'candles/{timeframe}/{unit}': 2,
+                        'candles/seconds': 2,
+                        'candles/minutes/{unit}': 2,
+                        'candles/minutes/1': 2,
+                        'candles/minutes/3': 2,
+                        'candles/minutes/5': 2,
+                        'candles/minutes/10': 2,
+                        'candles/minutes/15': 2,
+                        'candles/minutes/30': 2,
+                        'candles/minutes/60': 2,
+                        'candles/minutes/240': 2,
+                        'candles/days': 2,
+                        'candles/weeks': 2,
+                        'candles/months': 2,
+                        'candles/years': 2,
+                        'trades/ticks': 2,
+                        'ticker': 2,
+                        'ticker/all': 2,
+                        'orderbook': 2,
+                        'orderbook/supported_levels': 2,  # Upbit KR only
+                    },
                 },
                 'private': {
-                    'get': [
-                        'accounts',
-                        'orders/chance',
-                        'order',
-                        'orders',
-                        'orders/closed',
-                        'orders/open',
-                        'orders/uuids',
-                        'withdraws',
-                        'withdraw',
-                        'withdraws/chance',
-                        'deposits',
-                        'deposit',
-                        'deposits/coin_addresses',
-                        'deposits/coin_address',
-                    ],
-                    'post': [
-                        'orders',
-                        'withdraws/coin',
-                        'withdraws/krw',
-                        'deposits/generate_coin_address',
-                    ],
-                    'delete': [
-                        'order',
-                    ],
+                    'get': {
+                        'accounts': 0.67,  # RPS: 30
+                        'orders/chance': 0.67,
+                        'order': 0.67,
+                        'orders/closed': 0.67,
+                        'orders/open': 0.67,
+                        'orders/uuids': 0.67,
+                        'withdraws': 0.67,
+                        'withdraw': 0.67,
+                        'withdraws/chance': 0.67,
+                        'withdraws/coin_addresses': 0.67,
+                        'deposits': 0.67,
+                        'deposits/chance/coin': 0.67,
+                        'deposit': 0.67,
+                        'deposits/coin_addresses': 0.67,
+                        'deposits/coin_address': 0.67,
+                        'travel_rule/vasps': 0.67,
+                        'status/wallet': 0.67,  # Upbit KR only
+                        'api_keys': 0.67,  # Upbit KR only
+                    },
+                    'post': {
+                        'orders': 2.5,  # RPS: 8
+                        'orders/cancel_and_new': 2.5,  # RPS: 8
+                        'withdraws/coin': 0.67,
+                        'withdraws/krw': 0.67,  # Upbit KR only.
+                        'deposits/krw': 0.67,  # Upbit KR only.
+                        'deposits/generate_coin_address': 0.67,
+                        'travel_rule/deposit/uuid': 0.67,  # RPS: 30, but each deposit can only be queried once every 10 minutes
+                        'travel_rule/deposit/txid': 0.67,  # RPS: 30, but each deposit can only be queried once every 10 minutes
+                    },
+                    'delete': {
+                        'order': 0.67,
+                        'orders/open': 40,  # RPS: 0.5
+                        'orders/uuids': 0.67,
+                    },
                 },
             },
             'fees': {
@@ -202,12 +220,14 @@ class upbit(Exchange, ImplicitAPI):
                         'marginMode': False,
                         'trigger': False,
                         'trailing': False,
+                        'symbolRequired': False,
                     },
                     'fetchOpenOrders': {
                         'marginMode': True,
                         'limit': 100,
                         'trigger': False,
                         'trailing': False,
+                        'symbolRequired': False,
                     },
                     'fetchOrders': None,  # todo
                     'fetchClosedOrders': {
@@ -218,6 +238,7 @@ class upbit(Exchange, ImplicitAPI):
                         'untilDays': 7,
                         'trigger': False,
                         'trailing': False,
+                        'symbolRequired': False,
                     },
                     'fetchOHLCV': {
                         'limit': 200,
@@ -254,8 +275,6 @@ class upbit(Exchange, ImplicitAPI):
             },
             'options': {
                 'createMarketBuyOrderRequiresPrice': True,
-                'fetchTickersMaxLength': 4096,  # 2048,
-                'fetchOrderBooksMaxLength': 4096,  # 2048,
                 'tradingFeesByQuoteCurrency': {
                     'KRW': 0.0005,
                 },
@@ -588,7 +607,7 @@ class upbit(Exchange, ImplicitAPI):
         #
         return self.parse_balance(response)
 
-    def fetch_order_books(self, symbols: Strings = None, limit: Int = None, params={}):
+    def fetch_order_books(self, symbols: Strings = None, limit: Int = None, params={}) -> OrderBooks:
         """
 
         https://docs.upbit.com/reference/%ED%98%B8%EA%B0%80-%EC%A0%95%EB%B3%B4-%EC%A1%B0%ED%9A%8C
@@ -603,10 +622,6 @@ class upbit(Exchange, ImplicitAPI):
         ids = None
         if symbols is None:
             ids = ','.join(self.ids)
-            # max URL length is 2083 symbols, including http schema, hostname, tld, etc...
-            if len(ids) > self.options['fetchOrderBooksMaxLength']:
-                numIds = len(self.ids)
-                raise ExchangeError(self.id + ' fetchOrderBooks() has ' + str(numIds) + ' symbols(' + str(len(ids)) + ' characters) exceeding max URL length(' + str(self.options['fetchOrderBooksMaxLength']) + ' characters), you are required to specify a list of symbols in the first argument to fetchOrderBooks')
         else:
             ids = self.market_ids(symbols)
             ids = ','.join(ids)
@@ -743,10 +758,6 @@ class upbit(Exchange, ImplicitAPI):
         ids = None
         if symbols is None:
             ids = ','.join(self.ids)
-            # max URL length is 2083 symbols, including http schema, hostname, tld, etc...
-            if len(ids) > self.options['fetchTickersMaxLength']:
-                numIds = len(self.ids)
-                raise ExchangeError(self.id + ' fetchTickers() has ' + str(numIds) + ' symbols exceeding max URL length, you are required to specify a list of symbols in the first argument to fetchTickers')
         else:
             ids = self.market_ids(symbols)
             ids = ','.join(ids)
@@ -979,6 +990,26 @@ class upbit(Exchange, ImplicitAPI):
             'percentage': True,
             'tierBased': False,
         }
+
+    def fetch_trading_fees(self, params={}) -> TradingFees:
+        """
+        fetch the trading fees for markets
+        :param dict [params]: extra parameters specific to the exchange API endpoint
+        :returns dict: a `trading fee structure <https://docs.ccxt.com/#/?id=trading-fee-structure>`
+        """
+        self.load_markets()
+        fetchMarketResponse = self.fetch_markets(params)
+        response: dict = {}
+        for i in range(0, len(fetchMarketResponse)):
+            element: dict = {}
+            element['maker'] = self.safe_number(fetchMarketResponse[i], 'maker')
+            element['taker'] = self.safe_number(fetchMarketResponse[i], 'taker')
+            element['symbol'] = self.safe_string(fetchMarketResponse[i], 'symbol')
+            element['percentage'] = True
+            element['tierBased'] = False
+            element['info'] = fetchMarketResponse[i]
+            response[self.safe_string(fetchMarketResponse[i], 'symbol')] = element
+        return response
 
     def parse_ohlcv(self, ohlcv, market: Market = None) -> list:
         #
@@ -1883,7 +1914,7 @@ class upbit(Exchange, ImplicitAPI):
         #
         return self.parse_deposit_address(response)
 
-    def create_deposit_address(self, code: str, params={}):
+    def create_deposit_address(self, code: str, params={}) -> DepositAddress:
         """
 
         https://docs.upbit.com/reference/%EC%9E%85%EA%B8%88-%EC%A3%BC%EC%86%8C-%EC%83%9D%EC%84%B1-%EC%9A%94%EC%B2%AD

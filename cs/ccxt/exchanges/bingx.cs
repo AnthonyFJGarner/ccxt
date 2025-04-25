@@ -35,6 +35,7 @@ public partial class bingx : Exchange
                 { "createOrder", true },
                 { "createOrders", true },
                 { "createOrderWithTakeProfitAndStopLoss", true },
+                { "createReduceOnlyOrder", true },
                 { "createStopLossOrder", true },
                 { "createStopOrder", true },
                 { "createTakeProfitOrder", true },
@@ -378,6 +379,7 @@ public partial class bingx : Exchange
                                 { "uid", 1 },
                                 { "apiKey/query", 2 },
                                 { "account/apiPermissions", 5 },
+                                { "allAccountBalance", 2 },
                             } },
                             { "post", new Dictionary<string, object>() {
                                 { "innerTransfer/authorizeSubAccount", 1 },
@@ -496,6 +498,8 @@ public partial class bingx : Exchange
                 { "SNOW", "Snowman" },
                 { "OMNI", "OmniCat" },
                 { "NAP", "$NAP" },
+                { "TRUMP", "TRUMPMAGA" },
+                { "TRUMPSOL", "TRUMP" },
             } },
             { "options", new Dictionary<string, object>() {
                 { "defaultType", "spot" },
@@ -567,17 +571,20 @@ public partial class bingx : Exchange
                         { "limit", 512 },
                         { "daysBack", 30 },
                         { "untilDays", 30 },
+                        { "symbolRequired", true },
                     } },
                     { "fetchOrder", new Dictionary<string, object>() {
                         { "marginMode", false },
                         { "trigger", false },
                         { "trailing", false },
+                        { "symbolRequired", true },
                     } },
                     { "fetchOpenOrders", new Dictionary<string, object>() {
                         { "marginMode", false },
                         { "limit", null },
                         { "trigger", false },
                         { "trailing", false },
+                        { "symbolRequired", false },
                     } },
                     { "fetchOrders", new Dictionary<string, object>() {
                         { "marginMode", false },
@@ -586,6 +593,7 @@ public partial class bingx : Exchange
                         { "untilDays", 7 },
                         { "trigger", false },
                         { "trailing", false },
+                        { "symbolRequired", true },
                     } },
                     { "fetchClosedOrders", new Dictionary<string, object>() {
                         { "marginMode", false },
@@ -595,6 +603,7 @@ public partial class bingx : Exchange
                         { "untilDays", 7 },
                         { "trigger", false },
                         { "trailing", false },
+                        { "symbolRequired", true },
                     } },
                     { "fetchOHLCV", new Dictionary<string, object>() {
                         { "limit", 1440 },
@@ -607,19 +616,7 @@ public partial class bingx : Exchange
                         { "daysBack", null },
                         { "untilDays", null },
                     } },
-                    { "fetchOHLCV", new Dictionary<string, object>() {
-                        { "limit", 1440 },
-                    } },
                     { "fetchOrders", null },
-                    { "fetchClosedOrders", new Dictionary<string, object>() {
-                        { "marginMode", false },
-                        { "limit", 1000 },
-                        { "daysBack", null },
-                        { "daysBackCanceled", null },
-                        { "untilDays", 7 },
-                        { "trigger", false },
-                        { "trailing", false },
-                    } },
                 } },
                 { "spot", new Dictionary<string, object>() {
                     { "extends", "defaultForLinear" },
@@ -647,12 +644,16 @@ public partial class bingx : Exchange
                         { "extends", "defaultForInverse" },
                     } },
                 } },
+                { "defaultForFuture", new Dictionary<string, object>() {
+                    { "extends", "defaultForLinear" },
+                    { "fetchOrders", null },
+                } },
                 { "future", new Dictionary<string, object>() {
                     { "linear", new Dictionary<string, object>() {
-                        { "extends", "defaultForLinear" },
+                        { "extends", "defaultForFuture" },
                     } },
                     { "inverse", new Dictionary<string, object>() {
-                        { "extends", "defaultForInverse" },
+                        { "extends", "defaultForFuture" },
                     } },
                 } },
             } },
@@ -829,7 +830,7 @@ public partial class bingx : Exchange
         //                  {
         //                    "symbol": "GEAR-USDT",
         //                    "minQty": 735, // deprecated
-        //                    "maxQty": 2941177, // deprecated
+        //                    "maxQty": 2941177, // deprecated.
         //                    "minNotional": 5,
         //                    "maxNotional": 20000,
         //                    "status": 1,
@@ -1510,62 +1511,82 @@ public partial class bingx : Exchange
         // spot
         //
         //     {
-        //         "code": 0,
-        //         "data": {
-        //           "bids": [
-        //             [
-        //               "26324.73",
-        //               "0.37655"
+        //         "code":0,
+        //         "timestamp":1743240504535,
+        //         "data":{
+        //             "bids":[
+        //                 ["83775.39","1.981875"],
+        //                 ["83775.38","0.001076"],
+        //                 ["83775.34","0.254716"],
         //             ],
-        //             [
-        //               "26324.71",
-        //               "0.31888"
+        //             "asks":[
+        //                 ["83985.40","0.000013"],
+        //                 ["83980.00","0.000011"],
+        //                 ["83975.70","0.000061000000000000005"],
         //             ],
-        //         ],
-        //         "asks": [
-        //             [
-        //               "26340.30",
-        //               "6.45221"
-        //             ],
-        //             [
-        //               "26340.15",
-        //               "6.73261"
-        //             ],
-        //         ]}
+        //             "ts":1743240504535,
+        //             "lastUpdateId":13565639906
+        //         }
         //     }
         //
-        // swap
+        //
+        // linear swap
         //
         //     {
-        //         "code": 0,
-        //         "msg": "",
-        //         "data": {
-        //           "T": 1683914263304,
-        //           "bids": [
-        //             [
-        //               "26300.90000000",
-        //               "30408.00000000"
+        //         "code":0,
+        //         "msg":"",
+        //         "data":{
+        //             "T":1743240836255,
+        //             "bids":[
+        //                 ["83760.7","7.0861"],
+        //                 ["83760.6","0.0044"],
+        //                 ["83757.7","1.9526"],
         //             ],
-        //             [
-        //               "26300.80000000",
-        //               "50906.00000000"
+        //             "asks":[
+        //                 ["83784.3","8.3531"],
+        //                 ["83782.8","23.7289"],
+        //                 ["83780.1","18.0617"],
         //             ],
-        //         ],
-        //         "asks": [
-        //             [
-        //               "26301.00000000",
-        //               "43616.00000000"
+        //             "bidsCoin":[
+        //                 ["83760.7","0.0007"],
+        //                 ["83760.6","0.0000"],
+        //                 ["83757.7","0.0002"],
         //             ],
-        //             [
-        //               "26301.10000000",
-        //               "49402.00000000"
+        //             "asksCoin":[
+        //                 ["83784.3","0.0008"],
+        //                 ["83782.8","0.0024"],
+        //                 ["83780.1","0.0018"],
+        //             ]
+        //         }
+        //     }
+        //
+        // inverse swap
+        //
+        //     {
+        //         "code":0,
+        //         "msg":"",
+        //         "timestamp":1743240979146,
+        //         "data":{
+        //             "T":1743240978691,
+        //             "bids":[
+        //                 ["83611.4","241.0"],
+        //                 ["83611.3","1.0"],
+        //                 ["83602.9","666.0"],
         //             ],
-        //         ]}
+        //             "asks":[
+        //                 ["83645.0","4253.0"],
+        //                 ["83640.5","3188.0"],
+        //                 ["83636.0","5540.0"],
+        //             ]
+        //         }
         //     }
         //
         object orderbook = this.safeDict(response, "data", new Dictionary<string, object>() {});
+        object nonce = this.safeInteger(orderbook, "lastUpdateId");
         object timestamp = this.safeInteger2(orderbook, "T", "ts");
-        return this.parseOrderBook(orderbook, getValue(market, "symbol"), timestamp, "bids", "asks", 0, 1);
+        object result = this.parseOrderBook(orderbook, getValue(market, "symbol"), timestamp, "bids", "asks", 0, 1);
+        ((IDictionary<string,object>)result)["nonce"] = nonce;
+        return result;
     }
 
     /**
@@ -2693,10 +2714,8 @@ public partial class bingx : Exchange
     public async override Task<object> createMarketOrderWithCost(object symbol, object side, object cost, object parameters = null)
     {
         parameters ??= new Dictionary<string, object>();
-        object req = new Dictionary<string, object>() {
-            { "quoteOrderQty", cost },
-        };
-        return await this.createOrder(symbol, "market", side, cost, null, this.extend(req, parameters));
+        ((IDictionary<string,object>)parameters)["quoteOrderQty"] = cost;
+        return await this.createOrder(symbol, "market", side, cost, null, parameters);
     }
 
     /**
@@ -2711,10 +2730,8 @@ public partial class bingx : Exchange
     public async override Task<object> createMarketBuyOrderWithCost(object symbol, object cost, object parameters = null)
     {
         parameters ??= new Dictionary<string, object>();
-        object req = new Dictionary<string, object>() {
-            { "quoteOrderQty", cost },
-        };
-        return await this.createOrder(symbol, "market", "buy", cost, null, this.extend(req, parameters));
+        ((IDictionary<string,object>)parameters)["quoteOrderQty"] = cost;
+        return await this.createOrder(symbol, "market", "buy", cost, null, parameters);
     }
 
     /**
@@ -2729,10 +2746,8 @@ public partial class bingx : Exchange
     public async override Task<object> createMarketSellOrderWithCost(object symbol, object cost, object parameters = null)
     {
         parameters ??= new Dictionary<string, object>();
-        object req = new Dictionary<string, object>() {
-            { "quoteOrderQty", cost },
-        };
-        return await this.createOrder(symbol, "market", "sell", cost, null, this.extend(req, parameters));
+        ((IDictionary<string,object>)parameters)["quoteOrderQty"] = cost;
+        return await this.createOrder(symbol, "market", "sell", cost, null, parameters);
     }
 
     public virtual object createOrderRequest(object symbol, object type, object side, object amount, object price = null, object parameters = null)
@@ -2994,7 +3009,12 @@ public partial class bingx : Exchange
                 positionSide = "BOTH";
             }
             ((IDictionary<string,object>)request)["positionSide"] = positionSide;
-            ((IDictionary<string,object>)request)["quantity"] = ((bool) isTrue((getValue(market, "inverse")))) ? amount : this.parseToNumeric(this.amountToPrecision(symbol, amount)); // precision not available for inverse contracts
+            object amountReq = amount;
+            if (!isTrue(getValue(market, "inverse")))
+            {
+                amountReq = this.parseToNumeric(this.amountToPrecision(symbol, amount));
+            }
+            ((IDictionary<string,object>)request)["quantity"] = amountReq; // precision not available for inverse contracts
         }
         parameters = this.omit(parameters, new List<object>() {"hedged", "triggerPrice", "stopLossPrice", "takeProfitPrice", "trailingAmount", "trailingPercent", "trailingType", "takeProfit", "stopLoss", "clientOrderId"});
         return this.extend(request, parameters);
@@ -4461,15 +4481,14 @@ public partial class bingx : Exchange
     public async override Task<object> fetchCanceledAndClosedOrders(object symbol = null, object since = null, object limit = null, object parameters = null)
     {
         parameters ??= new Dictionary<string, object>();
-        if (isTrue(isEqual(symbol, null)))
-        {
-            throw new ArgumentsRequired ((string)add(this.id, " fetchClosedOrders() requires a symbol argument")) ;
-        }
         await this.loadMarkets();
-        object market = this.market(symbol);
-        object request = new Dictionary<string, object>() {
-            { "symbol", getValue(market, "id") },
-        };
+        object market = null;
+        object request = new Dictionary<string, object>() {};
+        if (isTrue(!isEqual(symbol, null)))
+        {
+            market = this.market(symbol);
+            ((IDictionary<string,object>)request)["symbol"] = getValue(market, "id");
+        }
         object type = null;
         object subType = null;
         object standard = null;
@@ -4490,7 +4509,7 @@ public partial class bingx : Exchange
         {
             if (isTrue(!isEqual(limit, null)))
             {
-                ((IDictionary<string,object>)request)["limit"] = limit;
+                ((IDictionary<string,object>)request)["pageSize"] = limit;
             }
             response = await this.spotV1PrivateGetTradeHistoryOrders(this.extend(request, parameters));
         } else
@@ -5436,7 +5455,7 @@ public partial class bingx : Exchange
         object request = new Dictionary<string, object>() {
             { "coin", getValue(currency, "id") },
             { "address", address },
-            { "amount", this.numberToString(amount) },
+            { "amount", this.currencyToPrecision(code, amount) },
             { "walletType", walletType },
         };
         object network = this.safeStringUpper(parameters, "network");
@@ -5742,7 +5761,7 @@ public partial class bingx : Exchange
      * @param {object} [params] extra parameters specific to the exchange API endpoint
      * @returns {object} an object detailing whether the market is in hedged or one-way mode
      */
-    public async virtual Task<object> fetchPositionMode(object symbol = null, object parameters = null)
+    public async override Task<object> fetchPositionMode(object symbol = null, object parameters = null)
     {
         parameters ??= new Dictionary<string, object>();
         object response = await this.swapV1PrivateGetPositionSideDual(parameters);

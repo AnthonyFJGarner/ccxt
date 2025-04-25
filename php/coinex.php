@@ -10,7 +10,7 @@ use ccxt\abstract\coinex as Exchange;
 
 class coinex extends Exchange {
 
-    public function describe() {
+    public function describe(): mixed {
         return $this->deep_extend(parent::describe(), array(
             'id' => 'coinex',
             'name' => 'CoinEx',
@@ -529,17 +529,20 @@ class coinex extends Exchange {
                         'limit' => 1000,
                         'daysBack' => null,
                         'untilDays' => 100000,
+                        'symbolRequired' => true,
                     ),
                     'fetchOrder' => array(
                         'marginMode' => false,
                         'trigger' => false,
                         'trailing' => false,
+                        'symbolRequired' => true,
                     ),
                     'fetchOpenOrders' => array(
                         'marginMode' => true,
                         'limit' => 1000,
                         'trigger' => true,
                         'trailing' => false,
+                        'symbolRequired' => false,
                     ),
                     'fetchOrders' => null,
                     'fetchClosedOrders' => array(
@@ -550,6 +553,7 @@ class coinex extends Exchange {
                         'untilDays' => null,
                         'trigger' => true,
                         'trailing' => false,
+                        'symbolRequired' => false,
                     ),
                     'fetchOHLCV' => array(
                         'limit' => 1000,
@@ -743,6 +747,9 @@ class coinex extends Exchange {
             for ($j = 0; $j < count($chains); $j++) {
                 $chain = $chains[$j];
                 $networkId = $this->safe_string($chain, 'chain');
+                if ($networkId === null) {
+                    continue;
+                }
                 $precisionString = $this->parse_precision($this->safe_string($chain, 'withdrawal_precision'));
                 $feeString = $this->safe_string($chain, 'withdrawal_fee');
                 $minNetworkDepositString = $this->safe_string($chain, 'min_deposit_amount');
@@ -802,7 +809,7 @@ class coinex extends Exchange {
         return $this->array_concat($spotMarkets, $swapMarkets);
     }
 
-    public function fetch_spot_markets($params) {
+    public function fetch_spot_markets($params): array {
         $response = $this->v2PublicGetSpotMarket ($params);
         //
         //     {
@@ -1200,7 +1207,7 @@ class coinex extends Exchange {
         return $this->parse_tickers($data, $symbols);
     }
 
-    public function fetch_time($params = array ()) {
+    public function fetch_time($params = array ()): ?int {
         /**
          * fetches the current integer timestamp in milliseconds from the exchange server
          *
@@ -3799,7 +3806,7 @@ class coinex extends Exchange {
         return $this->fetch_orders_by_status('finished', $symbol, $since, $limit, $params);
     }
 
-    public function create_deposit_address(string $code, $params = array ()) {
+    public function create_deposit_address(string $code, $params = array ()): array {
         /**
          * create a $currency deposit address
          *
@@ -4788,7 +4795,7 @@ class coinex extends Exchange {
         $request = array(
             'ccy' => $currency['id'],
             'to_address' => $address, // must be authorized, inter-user transfer by a registered mobile phone number or an email $address is supported
-            'amount' => $this->number_to_string($amount), // the actual $amount without fees, https://www.coinex.com/fees
+            'amount' => $this->currency_to_precision($code, $amount), // the actual $amount without fees, https://www.coinex.com/fees
         );
         if ($tag !== null) {
             $request['memo'] = $tag;

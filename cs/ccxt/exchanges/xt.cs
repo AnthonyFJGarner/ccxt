@@ -33,7 +33,7 @@ public partial class xt : Exchange
                 { "createOrder", true },
                 { "createPostOnlyOrder", false },
                 { "createReduceOnlyOrder", true },
-                { "editOrder", false },
+                { "editOrder", true },
                 { "fetchAccounts", false },
                 { "fetchBalance", true },
                 { "fetchBidsAsks", true },
@@ -103,7 +103,7 @@ public partial class xt : Exchange
                 { "repayMargin", false },
                 { "setLeverage", true },
                 { "setMargin", false },
-                { "setMarginMode", false },
+                { "setMarginMode", true },
                 { "setPositionMode", false },
                 { "signIn", false },
                 { "transfer", true },
@@ -217,6 +217,9 @@ public partial class xt : Exchange
                             { "open-order", 1 },
                             { "order/{orderId}", 1 },
                         } },
+                        { "put", new Dictionary<string, object>() {
+                            { "order/{orderId}", 1 },
+                        } },
                     } },
                     { "linear", new Dictionary<string, object>() {
                         { "get", new Dictionary<string, object>() {
@@ -251,6 +254,7 @@ public partial class xt : Exchange
                             { "future/trade/v1/order/cancel-all", 1 },
                             { "future/trade/v1/order/create", 1 },
                             { "future/trade/v1/order/create-batch", 1 },
+                            { "future/trade/v1/order/update", 1 },
                             { "future/user/v1/account/open", 1 },
                             { "future/user/v1/position/adjust-leverage", 1 },
                             { "future/user/v1/position/auto-margin", 1 },
@@ -258,6 +262,7 @@ public partial class xt : Exchange
                             { "future/user/v1/position/margin", 1 },
                             { "future/user/v1/user/collection/add", 1 },
                             { "future/user/v1/user/collection/cancel", 1 },
+                            { "future/user/v1/position/change-type", 1 },
                         } },
                     } },
                     { "inverse", new Dictionary<string, object>() {
@@ -293,6 +298,7 @@ public partial class xt : Exchange
                             { "future/trade/v1/order/cancel-all", 1 },
                             { "future/trade/v1/order/create", 1 },
                             { "future/trade/v1/order/create-batch", 1 },
+                            { "future/trade/v1/order/update", 1 },
                             { "future/user/v1/account/open", 1 },
                             { "future/user/v1/position/adjust-leverage", 1 },
                             { "future/user/v1/position/auto-margin", 1 },
@@ -451,10 +457,12 @@ public partial class xt : Exchange
                     { "TRANSFER_012", typeof(PermissionDenied) },
                     { "symbol_not_support_trading_via_api", typeof(BadSymbol) },
                     { "open_order_min_nominal_value_limit", typeof(InvalidOrder) },
+                    { "insufficient_balance", typeof(InsufficientFunds) },
                 } },
                 { "broad", new Dictionary<string, object>() {
                     { "The symbol does not support trading via API", typeof(BadSymbol) },
                     { "Exceeds the minimum notional value of a single order", typeof(InvalidOrder) },
+                    { "insufficient balance", typeof(InsufficientFunds) },
                 } },
             } },
             { "timeframes", new Dictionary<string, object>() {
@@ -640,6 +648,7 @@ public partial class xt : Exchange
                         { "untilDays", 100000 },
                         { "marketType", true },
                         { "subType", true },
+                        { "symbolRequired", false },
                     } },
                     { "fetchOrder", new Dictionary<string, object>() {
                         { "marginMode", false },
@@ -647,6 +656,7 @@ public partial class xt : Exchange
                         { "trailing", false },
                         { "marketType", true },
                         { "subType", true },
+                        { "symbolRequired", false },
                     } },
                     { "fetchOpenOrders", new Dictionary<string, object>() {
                         { "marginMode", true },
@@ -655,6 +665,7 @@ public partial class xt : Exchange
                         { "trailing", false },
                         { "marketType", true },
                         { "subType", true },
+                        { "symbolRequired", false },
                     } },
                     { "fetchOrders", new Dictionary<string, object>() {
                         { "marginMode", true },
@@ -665,6 +676,7 @@ public partial class xt : Exchange
                         { "trailing", false },
                         { "marketType", true },
                         { "subType", true },
+                        { "symbolRequired", false },
                     } },
                     { "fetchClosedOrders", new Dictionary<string, object>() {
                         { "marginMode", true },
@@ -676,6 +688,7 @@ public partial class xt : Exchange
                         { "trailing", false },
                         { "marketType", true },
                         { "subType", true },
+                        { "symbolRequired", false },
                     } },
                     { "fetchOHLCV", new Dictionary<string, object>() {
                         { "limit", 1000 },
@@ -1359,6 +1372,8 @@ public partial class xt : Exchange
      * @param {int} [since] timestamp in ms of the earliest candle to fetch
      * @param {int} [limit] the maximum amount of candles to fetch
      * @param {object} params extra parameters specific to the xt api endpoint
+     * @param {int} [params.until] timestamp in ms of the latest candle to fetch
+     * @param {boolean} [params.paginate] default false, when true will automatically paginate by calling this endpoint multiple times. See in the docs all the [available parameters](https://github.com/ccxt/ccxt/wiki/Manual#pagination-params)
      * @returns {int[][]} A list of candles ordered as timestamp, open, high, low, close, volume
      */
     public async override Task<object> fetchOHLCV(object symbol, object timeframe = null, object since = null, object limit = null, object parameters = null)
@@ -1366,6 +1381,14 @@ public partial class xt : Exchange
         timeframe ??= "1m";
         parameters ??= new Dictionary<string, object>();
         await this.loadMarkets();
+        object paginate = false;
+        var paginateparametersVariable = this.handleOptionAndParams(parameters, "fetchOHLCV", "paginate", false);
+        paginate = ((IList<object>)paginateparametersVariable)[0];
+        parameters = ((IList<object>)paginateparametersVariable)[1];
+        if (isTrue(paginate))
+        {
+            return await this.fetchPaginatedCallDeterministic("fetchOHLCV", symbol, since, limit, timeframe, parameters, 1000);
+        }
         object market = this.market(symbol);
         object request = new Dictionary<string, object>() {
             { "symbol", getValue(market, "id") },
@@ -1378,6 +1401,15 @@ public partial class xt : Exchange
         if (isTrue(!isEqual(limit, null)))
         {
             ((IDictionary<string,object>)request)["limit"] = limit;
+        } else
+        {
+            ((IDictionary<string,object>)request)["limit"] = 1000;
+        }
+        object until = this.safeInteger(parameters, "until");
+        parameters = this.omit(parameters, new List<object>() {"until"});
+        if (isTrue(!isEqual(until, null)))
+        {
+            ((IDictionary<string,object>)request)["endTime"] = until;
         }
         object response = null;
         if (isTrue(getValue(market, "linear")))
@@ -3658,7 +3690,7 @@ public partial class xt : Exchange
         //         "cancelId": "208322474307982720"
         //     }
         //
-        // swap and future: createOrder, cancelOrder
+        // swap and future: createOrder, cancelOrder, editOrder
         //
         //     {
         //         "returnCode": 0,
@@ -3763,6 +3795,14 @@ public partial class xt : Exchange
         //         "createdTime": 1681273420039
         //     }
         //
+        // spot editOrder
+        //
+        //     {
+        //         "orderId": "484203027161892224",
+        //         "modifyId": "484203544105344000",
+        //         "clientModifyId": null
+        //     }
+        //
         object marketId = this.safeString(order, "symbol");
         object marketType = ((bool) isTrue(isTrue((inOp(order, "result"))) || isTrue((inOp(order, "positionSide"))))) ? "contract" : "spot";
         market = this.safeMarket(marketId, market, null, marketType);
@@ -3776,7 +3816,7 @@ public partial class xt : Exchange
         return this.safeOrder(new Dictionary<string, object>() {
             { "info", order },
             { "id", this.safeStringN(order, new List<object>() {"orderId", "result", "cancelId", "entrustId", "profitId"}) },
-            { "clientOrderId", this.safeString(order, "clientOrderId") },
+            { "clientOrderId", this.safeString2(order, "clientOrderId", "clientModifyId") },
             { "timestamp", timestamp },
             { "datetime", this.iso8601(timestamp) },
             { "lastTradeTimestamp", lastUpdatedTimestamp },
@@ -5153,6 +5193,153 @@ public partial class xt : Exchange
         };
     }
 
+    /**
+     * @method
+     * @name xt#setMarginMode
+     * @description set margin mode to 'cross' or 'isolated'
+     * @see https://doc.xt.com/#futures_userchangePositionType
+     * @param {string} marginMode 'cross' or 'isolated'
+     * @param {string} [symbol] required
+     * @param {object} [params] extra parameters specific to the exchange API endpoint
+     * @param {string} [params.positionSide] *required* "long" or "short"
+     * @returns {object} response from the exchange
+     */
+    public async override Task<object> setMarginMode(object marginMode, object symbol = null, object parameters = null)
+    {
+        parameters ??= new Dictionary<string, object>();
+        if (isTrue(isEqual(symbol, null)))
+        {
+            throw new ArgumentsRequired ((string)add(this.id, " setMarginMode() requires a symbol argument")) ;
+        }
+        await this.loadMarkets();
+        object market = this.market(symbol);
+        if (isTrue(getValue(market, "spot")))
+        {
+            throw new BadSymbol ((string)add(this.id, " setMarginMode() supports contract markets only")) ;
+        }
+        marginMode = ((string)marginMode).ToLower();
+        if (isTrue(isTrue(!isEqual(marginMode, "isolated")) && isTrue(!isEqual(marginMode, "cross"))))
+        {
+            throw new BadRequest ((string)add(this.id, " setMarginMode() marginMode argument should be isolated or cross")) ;
+        }
+        if (isTrue(isEqual(marginMode, "cross")))
+        {
+            marginMode = "CROSSED";
+        } else
+        {
+            marginMode = "ISOLATED";
+        }
+        object posSide = this.safeStringUpper(parameters, "positionSide");
+        if (isTrue(isEqual(posSide, null)))
+        {
+            throw new ArgumentsRequired ((string)add(this.id, " setMarginMode() requires a positionSide parameter, either \"LONG\" or \"SHORT\"")) ;
+        }
+        object request = new Dictionary<string, object>() {
+            { "positionType", marginMode },
+            { "positionSide", posSide },
+            { "symbol", getValue(market, "id") },
+        };
+        object response = await this.privateLinearPostFutureUserV1PositionChangeType(this.extend(request, parameters));
+        //
+        // {
+        //     "error": {
+        //       "code": "",
+        //       "msg": ""
+        //     },
+        //     "msgInfo": "",
+        //     "result": {},
+        //     "returnCode": 0
+        // }
+        //
+        return response;  // unify return type
+    }
+
+    /**
+     * @method
+     * @name xt#editOrder
+     * @description cancels an order and places a new order
+     * @see https://doc.xt.com/#orderorderUpdate
+     * @see https://doc.xt.com/#futures_orderupdate
+     * @see https://doc.xt.com/#futures_entrustupdateProfit
+     * @param {string} id order id
+     * @param {string} symbol unified symbol of the market to create an order in
+     * @param {string} type 'market' or 'limit'
+     * @param {string} side 'buy' or 'sell'
+     * @param {float} amount how much of the currency you want to trade in units of the base currency
+     * @param {float} [price] the price at which the order is to be fulfilled, in units of the quote currency, ignored in market orders
+     * @param {object} [params] extra parameters specific to the exchange API endpoint
+     * @param {float} [params.stopLoss] price to set a stop-loss on an open position
+     * @param {float} [params.takeProfit] price to set a take-profit on an open position
+     * @returns {object} an [order structure]{@link https://docs.ccxt.com/#/?id=order-structure}
+     */
+    public async override Task<object> editOrder(object id, object symbol, object type, object side, object amount = null, object price = null, object parameters = null)
+    {
+        parameters ??= new Dictionary<string, object>();
+        if (isTrue(isEqual(amount, null)))
+        {
+            throw new ArgumentsRequired ((string)add(this.id, " editOrder() requires an amount argument")) ;
+        }
+        await this.loadMarkets();
+        object market = this.market(symbol);
+        object request = new Dictionary<string, object>() {};
+        object stopLoss = this.safeNumber2(parameters, "stopLoss", "triggerStopPrice");
+        object takeProfit = this.safeNumber2(parameters, "takeProfit", "triggerProfitPrice");
+        parameters = this.omit(parameters, new List<object>() {"stopLoss", "takeProfit"});
+        object isStopLoss = (!isEqual(stopLoss, null));
+        object isTakeProfit = (!isEqual(takeProfit, null));
+        if (isTrue(isTrue(isStopLoss) || isTrue(isTakeProfit)))
+        {
+            ((IDictionary<string,object>)request)["profitId"] = id;
+        } else
+        {
+            ((IDictionary<string,object>)request)["orderId"] = id;
+            ((IDictionary<string,object>)request)["price"] = this.priceToPrecision(symbol, price);
+        }
+        object response = null;
+        if (isTrue(getValue(market, "swap")))
+        {
+            if (isTrue(isStopLoss))
+            {
+                ((IDictionary<string,object>)request)["triggerStopPrice"] = this.priceToPrecision(symbol, stopLoss);
+            } else if (isTrue(!isEqual(takeProfit, null)))
+            {
+                ((IDictionary<string,object>)request)["triggerProfitPrice"] = this.priceToPrecision(symbol, takeProfit);
+            } else
+            {
+                ((IDictionary<string,object>)request)["origQty"] = this.amountToPrecision(symbol, amount);
+            }
+            object subType = null;
+            var subTypeparametersVariable = this.handleSubTypeAndParams("editOrder", market, parameters);
+            subType = ((IList<object>)subTypeparametersVariable)[0];
+            parameters = ((IList<object>)subTypeparametersVariable)[1];
+            if (isTrue(isEqual(subType, "inverse")))
+            {
+                if (isTrue(isTrue(isStopLoss) || isTrue(isTakeProfit)))
+                {
+                    response = await this.privateInversePostFutureTradeV1EntrustUpdateProfitStop(this.extend(request, parameters));
+                } else
+                {
+                    response = await this.privateInversePostFutureTradeV1OrderUpdate(this.extend(request, parameters));
+                }
+            } else
+            {
+                if (isTrue(isTrue(isStopLoss) || isTrue(isTakeProfit)))
+                {
+                    response = await this.privateLinearPostFutureTradeV1EntrustUpdateProfitStop(this.extend(request, parameters));
+                } else
+                {
+                    response = await this.privateLinearPostFutureTradeV1OrderUpdate(this.extend(request, parameters));
+                }
+            }
+        } else
+        {
+            ((IDictionary<string,object>)request)["quantity"] = this.amountToPrecision(symbol, amount);
+            response = await this.privateSpotPutOrderOrderId(this.extend(request, parameters));
+        }
+        object result = ((bool) isTrue((getValue(market, "swap")))) ? response : this.safeDict(response, "result", new Dictionary<string, object>() {});
+        return this.parseOrder(result, market);
+    }
+
     public override object handleErrors(object code, object reason, object url, object method, object headers, object body, object response, object requestHeaders, object requestBody)
     {
         //
@@ -5203,6 +5390,9 @@ public partial class xt : Exchange
         //         "ma": [],
         //         "result": {}
         //     }
+        //
+        // {"returnCode":1,"msgInfo":"failure","error":{"code":"insufficient_balance","msg":"insufficient balance","args":[]},"result":null}
+        //
         //
         object status = this.safeStringUpper2(response, "msgInfo", "mc");
         if (isTrue(isTrue(!isEqual(status, null)) && isTrue(!isEqual(status, "SUCCESS"))))
@@ -5267,6 +5457,10 @@ public partial class xt : Exchange
                 }
             }
             object isUndefinedBody = (isTrue(isTrue((isEqual(method, "GET"))) || isTrue((isEqual(path, "order/{orderId}")))) || isTrue((isEqual(path, "ws-token"))));
+            if (isTrue(isTrue((isEqual(method, "PUT"))) && isTrue((isEqual(endpoint, "spot")))))
+            {
+                isUndefinedBody = false;
+            }
             body = ((bool) isTrue(isUndefinedBody)) ? null : this.json(body);
             object payloadString = null;
             if (isTrue(isTrue((isEqual(endpoint, "spot"))) || isTrue((isEqual(endpoint, "user")))))

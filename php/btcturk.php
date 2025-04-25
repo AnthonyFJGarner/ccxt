@@ -10,7 +10,7 @@ use ccxt\abstract\btcturk as Exchange;
 
 class btcturk extends Exchange {
 
-    public function describe() {
+    public function describe(): mixed {
         return $this->deep_extend(parent::describe(), array(
             'id' => 'btcturk',
             'name' => 'BTCTurk',
@@ -158,6 +158,7 @@ class btcturk extends Exchange {
                         'limit' => 100,
                         'daysBack' => 100000,
                         'untilDays' => 30,
+                        'symbolRequired' => true,
                     ),
                     'fetchOrder' => null,
                     'fetchOpenOrders' => array(
@@ -165,6 +166,7 @@ class btcturk extends Exchange {
                         'limit' => null,
                         'trigger' => false,
                         'trailing' => false,
+                        'symbolRequired' => true,
                     ),
                     'fetchOrders' => array(
                         'marginMode' => false,
@@ -173,6 +175,7 @@ class btcturk extends Exchange {
                         'untilDays' => 30,
                         'trigger' => false,
                         'trailing' => false,
+                        'symbolRequired' => true,
                     ),
                     'fetchClosedOrders' => null,
                     'fetchOHLCV' => array(

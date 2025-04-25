@@ -10,7 +10,7 @@ use ccxt\abstract\blockchaincom as Exchange;
 
 class blockchaincom extends Exchange {
 
-    public function describe() {
+    public function describe(): mixed {
         return $this->deep_extend(parent::describe(), array(
             'id' => 'blockchaincom',
             'secret' => null,
@@ -242,10 +242,12 @@ class blockchaincom extends Exchange {
                         'limit' => 1000,
                         'daysBack' => 100000, // todo implementation
                         'untilDays' => 100000, // todo implementation
+                        'symbolRequired' => false,
                     ),
                     'fetchOrder' => array(
                         'marginMode' => false,
                         'trigger' => false,
+                        'symbolRequired' => false,
                         'trailing' => false,
                     ),
                     'fetchOpenOrders' => array(
@@ -253,6 +255,7 @@ class blockchaincom extends Exchange {
                         'limit' => 1000,
                         'trigger' => false,
                         'trailing' => false,
+                        'symbolRequired' => false,
                     ),
                     'fetchOrders' => null, // todo implement
                     'fetchClosedOrders' => array(
@@ -263,6 +266,7 @@ class blockchaincom extends Exchange {
                         'untilDays' => 100000,
                         'trigger' => false,
                         'trailing' => false,
+                        'symbolRequired' => false,
                     ),
                     'fetchOHLCV' => null, // todo webapi
                 ),
